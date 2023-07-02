@@ -57,7 +57,7 @@ app.post("/signin",async(req,res)=>{
 app.post("/add/role/:role",async (req,res)=>{
     let {role} = req.params
     try{
-        let collectionName = role != "doctor" ? "users" : "doctors"
+        let collectionName = req.body.Role != "doctor" ? "users" : "doctors"
 
         let collection = await getCollection(collectionName)
         let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
