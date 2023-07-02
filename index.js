@@ -29,6 +29,31 @@ app.get("/",(req,res)=>{
     res.send('running in 3000')
 })
 
+app.post("/signin",async(req,res)=>{
+    try{
+        let collectionName = req.body.Role != "doctor" ? "users" : "doctors"
+
+        let collection = await getCollection(collectionName)
+        let obj = await collection.find({"Name":req.body.Name,"Password":req.body.Password,"Role":req.body.Role}).toArray()
+        // console.log(obj)
+        // res.send(obj)
+        if(obj.length > 0){
+        // if(role != "doctor"){
+            res.status(200).send(obj)
+        }else{
+            res.status(400).send("No user found.")
+        }
+        // }else{
+        //     res.send('collection not created')
+        // }
+        // console.log('success')
+        // getData()
+        // response.send(inserted)
+    }catch(error){
+        console.log('fail')
+    }
+})
+
 app.post("/add/role/:role",async (req,res)=>{
     let {role} = req.params
     try{
@@ -36,9 +61,10 @@ app.post("/add/role/:role",async (req,res)=>{
 
         let collection = await getCollection(collectionName)
         let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
+        let limiter = await collection.find({}).toArray()
         // console.log(obj)
         // res.send(obj)
-        if(obj.length == 0){
+        if(obj.length == 0 && limiter.length < 20){
         // if(role != "doctor"){
             collection.insertOne({
                 ...req.body
