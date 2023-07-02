@@ -18,28 +18,46 @@ async function getCollection(collectionName){
     return collection
 }
 
-async function getData(){
+async function getData(cName){
     let result = await client.connect();
     db = result.db("root-db")
-    let v = await db.collection("users").find({}).toArray()
-    console.log(v)
+    let v = await db.collection(cName).find({}).toArray()
+    console.log(v,"data")
 }
 
 app.get("/",(req,res)=>{
     res.send('running in 3000')
 })
 
-app.post("/add/user",async (req,res)=>{
+app.post("/add/role/:role",async (req,res)=>{
+    let {role} = req.params
     try{
-        let collection = await getCollection("users")
-       
+        let collectionName = role != "doctor" ? "users" : "doctors"
+
+        let collection = await getCollection(collectionName)
+        let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
+        // console.log(obj)
+        // res.send(obj)
+        if(obj.length == 0){
+        // if(role != "doctor"){
             collection.insertOne({
-            ...req.body
+                ...req.body
             }).then((response)=>{
-                res.send(response)
+                    res.status(200).send(response)
             }).catch((err)=>{
-                res.send(err)
+                    if(err.code == 121){
+                        res.status(400).send(err.errInfo.details.schemaRulesNotSatisfied)
+                    }
+                    else{
+                        res.status(400).send (err)
+                    }
             })
+        }else{
+            res.status(400).send("Email and Mobile are already used.")
+        }
+        // }else{
+        //     res.send('collection not created')
+        // }
         // console.log('success')
         // getData()
         // response.send(inserted)
@@ -50,15 +68,16 @@ app.post("/add/user",async (req,res)=>{
 
 
 app.listen(3000,()=>{
-    getDatabasesAndCollections().then((res)=>{
-        console.log(res)
-    })
+    // getDatabasesAndCollections().then((res)=>{
+    //     console.log(res)
+    // })
     
-    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Age"]
-    // modifyCollection("users",fields)
+    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName"]
+    // modifyCollection("doctors",fields)
 
-    //dropCollection("root-db","users")
-    getData()
+    // dropCollection("root-db","users")
+    // getData("users")
+    // getData("doctors")
     
     // getCollectionsList("root-db").then((res)=>{
     //     console.log(res)

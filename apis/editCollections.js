@@ -41,13 +41,19 @@ async function modifyCollection(collectionName,fields){//collection creation wit
     let db0 = await connection.db("root-db")
     // if(e == 'Email' || e == "Postcode" || e == "Experience" || e == "Mobile" || e == "DOB")
     for (let e of fields){
-        if(e == 'Age' || e == "Postcode" || e == "Experience" || e == "Mobile" || e == "DOB"){
+        if(e == 'Age'  || e == "Experience"){
            obj[e] = {
-            bsonType: "int",
+            bsonType: ["int"],
             description: "Required."
            }
         }
-        else if(e == "Password" || e == "Email"){
+        else if(e == "DOB"|| e == "Mobile"  || e == "Postcode" ){
+            obj[e] = {
+                bsonType: ["double","int"],
+                description: "Required."
+            }
+        }
+        else if(e == "Password" || e == "Email" || e =="HospitalName"){
             obj[e] = {
                 bsonType: ["string","int"],
                 description: "Required."
