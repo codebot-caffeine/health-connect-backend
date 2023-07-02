@@ -10,6 +10,8 @@ var client  = new MongoClient(url)
 var app = exp()
 app.use(exp.json())
 
+var port = process.env.PORT || 3000
+
 async function getCollection(collectionName){
     let result = await client.connect();
     db = result.db("root-db")
@@ -93,7 +95,7 @@ app.post("/add/role/:role",async (req,res)=>{
 })
 
 
-app.listen(3000,()=>{
+app.listen(port,()=>{
     // getDatabasesAndCollections().then((res)=>{
     //     console.log(res)
     // })
