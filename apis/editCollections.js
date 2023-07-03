@@ -59,9 +59,9 @@ async function modifyCollection(collectionName,fields){//collection creation wit
                 description: "Required."
             }
         }
-        else if(e == "Slots" || e == "Consultations"){
+        else if(e == "Slots" || e == "Consultations" || e == "Doctors"){
             obj[e] = {
-                bsonType : "array",
+                bsonType : ["array","undefined","object"],
                 description: "Optional"
             }
         }
@@ -73,7 +73,7 @@ async function modifyCollection(collectionName,fields){//collection creation wit
         }
     }
     let newFields = fields
-    newFields.filter(x => (x == 'Slots' || x == "Consultations")).forEach(x => fields.splice(fields.indexOf(x), 1));
+    newFields.filter(x => (x == 'Slots' || x == "Consultations" || x == "Doctors")).forEach(x => fields.splice(fields.indexOf(x), 1));
     console.log(obj,newFields)
 
     let value = db0.createCollection(collectionName,{
@@ -87,7 +87,7 @@ async function modifyCollection(collectionName,fields){//collection creation wit
           }
         }
       })
-    // return value
+    return value
 }
 // Name
 // Gender

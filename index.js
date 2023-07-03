@@ -1,5 +1,6 @@
 
 var exp = require("express")
+var cors = require('cors')
 var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollection, createDb} = require("./apis/editCollections")
 var MongoClient = require("mongodb").MongoClient
 
@@ -7,7 +8,7 @@ let url = "mongodb+srv://Eshh:health-connect@health-connect.ziqzbp9.mongodb.net/
 
 var client  = new MongoClient(url)
 
-var app = exp()
+var app = exp(cors())
 app.use(exp.json())
 
 var port = process.env.PORT || 3000
@@ -36,7 +37,7 @@ app.post("/signin",async(req,res)=>{
         let collectionName = req.body.Role != "doctor" ? "users" : "doctors"
 
         let collection = await getCollection(collectionName)
-        let obj = await collection.find({"Name":req.body.Name,"Password":req.body.Password,"Role":req.body.Role}).toArray()
+        let obj = await collection.find({"Email":req.body.Email,"Password":req.body.Password,"Role":req.body.Role}).toArray()
         // console.log(obj)
         // res.send(obj)
         if(obj.length > 0){
@@ -104,12 +105,16 @@ app.listen(port,()=>{
     //     console.log(res)
     // })
     console.log(`port started on ${port}`)
-    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Slots","Consultations"]
-    // modifyCollection("doctors",fields)
+    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization",
+    let fields = ["HospitalName","HospitalId","Address","Doctors"]
+    // modifyCollection("Hospitals",fields)
 
-    // dropCollection("root-db","doctors")
+    // dropCollection("root-db","Hospitals")
     // getData("users")
-    // getData("doctors")
+    
+    // insertHospitals()
+    // getData("Hospitals")
+
     
     // getCollectionsList("root-db").then((res)=>{
     //     console.log(res)
