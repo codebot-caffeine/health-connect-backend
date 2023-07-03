@@ -2,6 +2,7 @@
 var exp = require("express")
 var cors = require('cors')
 var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollection, createDb} = require("./apis/editCollections")
+var {insertHospitals} = require('./apis/supportApis')
 var MongoClient = require("mongodb").MongoClient
 
 let url = "mongodb+srv://Eshh:health-connect@health-connect.ziqzbp9.mongodb.net/?retryWrites=true&w=majority"
@@ -32,7 +33,8 @@ async function getData(cName){
     let result = await client.connect();
     db = result.db("root-db")
     let v = await db.collection(cName).find({}).toArray()
-    console.log(v,"data")
+    // console.log(v,"data")
+    return v
 }
 
 app.get("/",(req,res)=>{
@@ -52,7 +54,7 @@ app.post("/signin",async(req,res)=>{
             res.status(200).send(
                 {
                     status:true,
-                    response:{...obj}
+                    response:[...obj]
                 }
                 // obj
             )
@@ -90,9 +92,9 @@ app.post("/add/role/:role",async (req,res)=>{
             // if(role != "doctor"){
                 collection.insertOne({
                     ...req.body
-                }).then((res)=>{
+                }).then((response)=>{
                         res.status(200).send({status:true,
-                            response:res})
+                            response:response})
                 }).catch((err)=>{
                         if(err.code == 121){
                             res.status(400).send(
@@ -109,15 +111,27 @@ app.post("/add/role/:role",async (req,res)=>{
         }else{
             res.status(400).send({status:false,errorMessage:"role in path and body not matched"})
         }
-        // }else{
-        //     res.send('collection not created')
-        // }
-        // console.log('success')
-        // getData()
-        // response.send(inserted)
     }catch(error){
         console.log('fail')
     }
+})
+
+app.get("/list/hospitals",(req,response)=>{
+    getData('hospitals').then((res)=>{
+        console.log(res)
+        response.status(200).send({
+            status:true,
+            response:[
+                {hospitals : [...res]}
+            ]
+        })
+    }).catch((err)=>{
+        response.status(400).send({
+            status:false,
+            errorMessage: err
+        })
+    })
+    // res.send('running in 3000')
 })
 
 
@@ -127,18 +141,18 @@ app.listen(port,()=>{
     // })
     console.log(`port started on ${port}`)
     //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization",
-    let fields = ["HospitalName","HospitalId","Address","Doctors"]
-    // modifyCollection("Hospitals",fields)
+    let fields = ["HospitalName","HospitalId","Address","Doctors","Mobile","Website"]
+    // modifyCollection("hospitals",fields)
 
     // dropCollection("root-db","Hospitals")
     // getData("users")
     
     // insertHospitals()
-    // getData("Hospitals")
+    // getData("hospitals")
 
     
-    // getCollectionsList("root-db").then((res)=>{
-    //     console.log(res)
-    // })
+    getCollectionsList("root-db").then((res)=>{
+        console.log(res)
+    })
     
 })
