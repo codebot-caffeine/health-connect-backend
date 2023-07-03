@@ -49,9 +49,20 @@ app.post("/signin",async(req,res)=>{
         // res.send(obj)
         if(obj.length > 0){
         // if(role != "doctor"){
-            res.status(200).send(obj)
+            res.status(200).send(
+                {
+                    status:true,
+                    response:{...obj}
+                }
+                // obj
+            )
         }else{
-            res.status(400).send("No user found.")
+            res.status(400).send(
+                {
+                    status:false,
+                    errorMessage: "No user found."
+                }       
+            )
         }
         // }else{
         //     res.send('collection not created')
@@ -79,21 +90,24 @@ app.post("/add/role/:role",async (req,res)=>{
             // if(role != "doctor"){
                 collection.insertOne({
                     ...req.body
-                }).then((response)=>{
-                        res.status(200).send(response)
+                }).then((res)=>{
+                        res.status(200).send({status:true,
+                            response:res})
                 }).catch((err)=>{
                         if(err.code == 121){
-                            res.status(400).send(err.errInfo.details.schemaRulesNotSatisfied)
+                            res.status(400).send(
+                                {status:false,errorMessage :err.errInfo.details.schemaRulesNotSatisfied}
+                            )
                         }
                         else{
-                            res.status(400).send (err)
+                            res.status(400).send ({status:false,errorMessage :err})
                         }
                 })
             }else{
-                res.status(400).send("Email and Mobile are already used.")
+                res.status(400).send({status:false,errorMessage:"Email and Mobile are already used."})
             }
         }else{
-            res.status(400).send("role in path and body not matched")
+            res.status(400).send({status:false,errorMessage:"role in path and body not matched"})
         }
         // }else{
         //     res.send('collection not created')
