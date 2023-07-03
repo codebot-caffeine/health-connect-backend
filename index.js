@@ -8,7 +8,9 @@ let url = "mongodb+srv://Eshh:health-connect@health-connect.ziqzbp9.mongodb.net/
 
 var client  = new MongoClient(url)
 
-var app = exp(cors())
+var app = exp(cors({
+    origin: '*'
+}))
 app.use(exp.json())
 
 var port = process.env.PORT || 3000
