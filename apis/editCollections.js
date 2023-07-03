@@ -53,10 +53,16 @@ async function modifyCollection(collectionName,fields){//collection creation wit
                 description: "Required."
             }
         }
-        else if(e == "Password" || e == "Email" || e =="HospitalName"){
+        else if(e == "Password" || e == "Email" || e =="HospitalName" || e=="HospitalId"){
             obj[e] = {
                 bsonType: ["string","int"],
                 description: "Required."
+            }
+        }
+        else if(e == "Slots" || e == "Consultations"){
+            obj[e] = {
+                bsonType : "array",
+                description: "Optional"
             }
         }
         else{
@@ -66,21 +72,22 @@ async function modifyCollection(collectionName,fields){//collection creation wit
             }
         }
     }
-
-    console.log(obj,fields)
+    let newFields = fields
+    newFields.filter(x => (x == 'Slots' || x == "Consultations")).forEach(x => fields.splice(fields.indexOf(x), 1));
+    console.log(obj,newFields)
 
     let value = db0.createCollection(collectionName,{
         validator:{
           $jsonSchema: {
             bsonType: "object",
-            required: [ ...fields ],
+            required: [ ...newFields ],
             properties: {
               ...obj
             }
           }
         }
       })
-    return value
+    // return value
 }
 // Name
 // Gender

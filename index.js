@@ -59,29 +59,33 @@ app.post("/signin",async(req,res)=>{
 app.post("/add/role/:role",async (req,res)=>{
     let {role} = req.params
     try{
-        let collectionName = req.body.Role != "doctor" ? "users" : "doctors"
+        if(role == req.body.Role){
+            let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
 
-        let collection = await getCollection(collectionName)
-        let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
-        let limiter = await collection.find({}).toArray()
-        // console.log(obj)
-        // res.send(obj)
-        if(obj.length == 0 && limiter.length < 20){
-        // if(role != "doctor"){
-            collection.insertOne({
-                ...req.body
-            }).then((response)=>{
-                    res.status(200).send(response)
-            }).catch((err)=>{
-                    if(err.code == 121){
-                        res.status(400).send(err.errInfo.details.schemaRulesNotSatisfied)
-                    }
-                    else{
-                        res.status(400).send (err)
-                    }
-            })
+            let collection = await getCollection(collectionName)
+            let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
+            let limiter = await collection.find({}).toArray()
+            // console.log(obj)
+            // res.send(obj)
+            if(obj.length == 0 && limiter.length < 20){
+            // if(role != "doctor"){
+                collection.insertOne({
+                    ...req.body
+                }).then((response)=>{
+                        res.status(200).send(response)
+                }).catch((err)=>{
+                        if(err.code == 121){
+                            res.status(400).send(err.errInfo.details.schemaRulesNotSatisfied)
+                        }
+                        else{
+                            res.status(400).send (err)
+                        }
+                })
+            }else{
+                res.status(400).send("Email and Mobile are already used.")
+            }
         }else{
-            res.status(400).send("Email and Mobile are already used.")
+            res.status(400).send("role in path and body not matched")
         }
         // }else{
         //     res.send('collection not created')
@@ -99,11 +103,11 @@ app.listen(port,()=>{
     // getDatabasesAndCollections().then((res)=>{
     //     console.log(res)
     // })
-    
-    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName"]
+    console.log(`port started on ${port}`)
+    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Slots","Consultations"]
     // modifyCollection("doctors",fields)
 
-    // dropCollection("root-db","users")
+    // dropCollection("root-db","doctors")
     // getData("users")
     // getData("doctors")
     
