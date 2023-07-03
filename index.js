@@ -59,7 +59,7 @@ app.post("/signin",async(req,res)=>{
                 // obj
             )
         }else{
-            res.status(400).send(
+            res.status(200).send(
                 {
                     status:false,
                     errorMessage: "No user found."
@@ -106,7 +106,7 @@ app.post("/add/role/:role",async (req,res)=>{
                         }
                 })
             }else{
-                res.status(400).send({status:false,errorMessage:"Email and Mobile are already used."})
+                res.status(200).send({status:false,errorMessage:"Email and Mobile are already used."})
             }
         }else{
             res.status(400).send({status:false,errorMessage:"role in path and body not matched"})
@@ -132,6 +132,45 @@ app.get("/list/hospitals",(req,response)=>{
         })
     })
     // res.send('running in 3000')
+})
+
+app.post("/update/:role",async (req,res)=>{
+    let {role} = req.params
+    let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
+
+    let collection = await getCollection(collectionName)
+    let b = await collection.find({"Email":req.body.Email}).toArray()
+    // let id = await body._id
+    let userId = b[0]._id.toString()
+    // console.log(b[0]._id.toString(),req.body._id)
+    if(userId == req.body._id){
+         // create a filter for a movie to update
+        delete req.body._id
+        const filter = {"_id": b[0]._id};
+        const updateDoc = {
+            $set: {
+              ...req.body
+            },
+        };
+        await collection.updateOne(filter, updateDoc).then((result)=>{
+            res.status(200).send({
+                status:true,
+                response: `${result.matchedCount} document(s) matched the filter, updated ${result.modifiedCount} document(s)`
+            })
+        }).catch((error)=>{
+            res.status(200).send({
+                status:false,
+                errorMessage: error
+            })
+        });
+    }else{
+        res.status(400).send({
+            status:false,
+            errorMessage:'Email and id are not found.'
+        })
+    }
+
+
 })
 
 
