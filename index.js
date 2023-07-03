@@ -151,8 +151,8 @@ app.listen(port,()=>{
     // getData("hospitals")
 
     
-    getCollectionsList("root-db").then((res)=>{
-        console.log(res)
-    })
+    // getCollectionsList("root-db").then((res)=>{
+    //     console.log(res)
+    // })
     
 })
