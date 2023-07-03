@@ -8,7 +8,8 @@ let url = "mongodb+srv://Eshh:health-connect@health-connect.ziqzbp9.mongodb.net/
 
 var client  = new MongoClient(url)
 
-var app = exp(function(req, res, next) {
+var app = exp()
+app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
