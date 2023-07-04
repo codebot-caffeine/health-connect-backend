@@ -17,55 +17,62 @@ async function insertHospitals(){
     })
 }
 
-// app.post("/register", async (req, res) => {
+// app.post("/register/:role", async (req, res) => {
+//     let {role} = req.params
+//     try{
+//         if(role == req.body.Role){
+//             let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users-auth" : "doctors"
 
-//     // Our register logic starts here
-//     try {
-//       // Get user input
-//       const { first_name, last_name, email, password } = req.body;
-  
-//       // Validate user input
-//       if (!(email && password && first_name && last_name)) {
-//         res.status(400).send("All input is required");
-//       }
-  
-//       // check if user already exist
-//       // Validate if user exist in our database
-//       const oldUser = await User.findOne({ email });
-  
-//       if (oldUser) {
-//         return res.status(409).send("User Already Exist. Please Login");
-//       }
-  
-//       //Encrypt user password
-//       encryptedPassword = await bcrypt.hash(password, 10);
-  
-//       // Create user in our database
-//       const user = await User.create({
-//         first_name,
-//         last_name,
-//         email: email.toLowerCase(), // sanitize: convert email to lowercase
-//         password: encryptedPassword,
-//       });
-  
-//       // Create token
-//       const token = jwt.sign(
-//         { user_id: user._id, email },
-//         process.env.TOKEN_KEY,
-//         {
-//           expiresIn: "2h",
+//             let collection = await getCollection(collectionName)
+//             let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
+//             let limiter = await collection.find({}).toArray()
+            
+//             if(obj.length == 0 && limiter.length < 20){
+//             //Encrypt user password
+//                 let {Password} = req.body
+//                 encryptedPassword = await bcrypt.hash(Password, 10);
+            
+//                 // Create user in our database
+//                 collection.insertOne({
+//                     ...req.body,
+//                     "Password": encryptedPassword
+//                 }).then((response)=>{
+//                     const token = jwt.sign(
+//                         { user_id: response._id, Email },
+//                         TOKEN_KEY,
+//                         {
+//                         expiresIn: "2h",
+//                         }
+//                     );
+//                     // save user token
+//                     userCreated.token = token;
+                
+//                     // return new user
+//                     res.status(201).send({status:true,response:{...response}});
+//                 }).catch((err)=>{
+//                         if(err.code == 121){
+//                             res.status(400).send(
+//                                 {status:false,errorMessage :err.errInfo.details.schemaRulesNotSatisfied}
+//                             )
+//                         }
+//                         else{
+//                             res.status(400).send ({status:false,errorMessage :'failining in catch'})
+//                         }
+//                 })
+//             }else{
+//                 res.status(200).send({status:false,errorMessage:"Email and Mobile are already used."})
+//             }
+//         }else{
+//             res.status(400).send({status:false,errorMessage:"role in path and body not matched"})
 //         }
-//       );
-//       // save user token
-//       user.token = token;
-  
-//       // return new user
-//       res.status(201).json(user);
-//     } catch (err) {
+//     }
+//     catch (err) {
+//         res.status(400).send({status:false,errorMessage:err})
 //       console.log(err);
 //     }
 //     // Our register logic ends here
 // });
+
 
 
 module.exports = {insertHospitals}

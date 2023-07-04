@@ -1,8 +1,14 @@
 
 var exp = require("express")
 var cors = require('cors')
+var bcrypt = require("bcryptjs")
+var jwt  = require("jsonwebtoken")
+
+//imports from made moduels
 var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollection, createDb} = require("./apis/editCollections")
 var {insertHospitals} = require('./apis/supportApis')
+var{TOKEN_KEY} = require("./key")
+
 var MongoClient = require("mongodb").MongoClient
 
 let url = "mongodb+srv://Eshh:health-connect@health-connect.ziqzbp9.mongodb.net/?retryWrites=true&w=majority"
@@ -43,7 +49,7 @@ app.get("/",(req,res)=>{
 
 app.post("/signin",async(req,res)=>{
     try{
-        let collectionName = req.body.Role != "doctor" ? "users" : "doctors"
+        let collectionName = req.body.Role != "doctor" ? "users-auth" : "doctors-auth"
 
         let collection = await getCollection(collectionName)
         let obj = await collection.find({"Email":req.body.Email,"Password":req.body.Password,"Role":req.body.Role}).toArray()
@@ -81,7 +87,7 @@ app.post("/add/role/:role",async (req,res)=>{
     let {role} = req.params
     try{
         if(role == req.body.Role){
-            let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
+            let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users-auth" : "doctors-auth"
 
             let collection = await getCollection(collectionName)
             let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
@@ -136,7 +142,7 @@ app.get("/list/hospitals",(req,response)=>{
 
 app.post("/update/:role",async (req,res)=>{
     let {role} = req.params
-    let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
+    let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users-auth" : "doctors-auth"
 
     let collection = await getCollection(collectionName)
     let b = await collection.find({"Email":req.body.Email}).toArray()
@@ -179,15 +185,15 @@ app.listen(port,()=>{
     //     console.log(res)
     // })
     console.log(`port started on ${port}`)
-    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization",
-    let fields = ["HospitalName","HospitalId","Address","Doctors","Mobile","Website"]
-    // modifyCollection("hospitals",fields)
+    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website"
+    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId"]
+    // modifyCollection("doctors-auth",fields)
 
-    // dropCollection("root-db","Hospitals")
+    // dropCollection("root-db","users-auth")
     // getData("users")
     
     // insertHospitals()
-    // getData("hospitals")
+    // getData("users-auth")
 
     
     // getCollectionsList("root-db").then((res)=>{

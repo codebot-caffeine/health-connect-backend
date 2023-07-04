@@ -47,7 +47,7 @@ async function modifyCollection(collectionName,fields){//collection creation wit
             description: "Required."
            }
         }
-        else if(e == "DOB"|| e == "Mobile"  || e == "Postcode" ){
+        else if(e == "DOB"|| e == "Mobile" ){
             obj[e] = {
                 bsonType: ["double","int"],
                 description: "Required."
