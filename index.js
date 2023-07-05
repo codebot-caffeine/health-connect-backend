@@ -8,6 +8,7 @@ var jwt  = require("jsonwebtoken")
 var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollection, createDb} = require("./apis/editCollections")
 var {insertHospitals} = require('./apis/supportApis')
 var{TOKEN_KEY} = require("./key")
+var{verifyToken} = require('./middleware/auth')
 
 var MongoClient = require("mongodb").MongoClient
 
@@ -39,87 +40,12 @@ async function getData(cName){
     let result = await client.connect();
     db = result.db("root-db")
     let v = await db.collection(cName).find({}).toArray()
-    // console.log(v,"data")
+    console.log(v,"data")
     return v
 }
 
 app.get("/",(req,res)=>{
     res.send('running in 3000')
-})
-
-app.post("/signin",async(req,res)=>{
-    try{
-        let collectionName = req.body.Role != "doctor" ? "users-auth" : "doctors-auth"
-
-        let collection = await getCollection(collectionName)
-        let obj = await collection.find({"Email":req.body.Email,"Password":req.body.Password,"Role":req.body.Role}).toArray()
-        // console.log(obj)
-        // res.send(obj)
-        if(obj.length > 0){
-        // if(role != "doctor"){
-            res.status(200).send(
-                {
-                    status:true,
-                    response:[...obj]
-                }
-                // obj
-            )
-        }else{
-            res.status(200).send(
-                {
-                    status:false,
-                    errorMessage: "No user found."
-                }       
-            )
-        }
-        // }else{
-        //     res.send('collection not created')
-        // }
-        // console.log('success')
-        // getData()
-        // response.send(inserted)
-    }catch(error){
-        console.log('fail')
-    }
-})
-
-app.post("/add/role/:role",async (req,res)=>{
-    let {role} = req.params
-    try{
-        if(role == req.body.Role){
-            let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users-auth" : "doctors-auth"
-
-            let collection = await getCollection(collectionName)
-            let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
-            let limiter = await collection.find({}).toArray()
-            // console.log(obj)
-            // res.send(obj)
-            if(obj.length == 0 && limiter.length < 20){
-            // if(role != "doctor"){
-                collection.insertOne({
-                    ...req.body
-                }).then((response)=>{
-                        res.status(200).send({status:true,
-                            response:response})
-                }).catch((err)=>{
-                        if(err.code == 121){
-                            res.status(400).send(
-                                {status:false,errorMessage :err.errInfo.details.schemaRulesNotSatisfied}
-                            )
-                        }
-                        else{
-                            res.status(400).send ({status:false,errorMessage :err})
-                        }
-                })
-            }else{
-                res.status(200).send({status:false,errorMessage:"Email and Mobile are already used."})
-            }
-        }else{
-            res.status(400).send({status:false,errorMessage:"role in path and body not matched"})
-        }
-    }catch(error){
-        console.log('fail')
-    }
 })
 
 app.get("/list/hospitals",(req,response)=>{
@@ -140,7 +66,7 @@ app.get("/list/hospitals",(req,response)=>{
     // res.send('running in 3000')
 })
 
-app.post("/update/:role",async (req,res)=>{
+app.post("/update/:role",verifyToken,async (req,res)=>{
     let {role} = req.params
     let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users-auth" : "doctors-auth"
 
@@ -152,10 +78,23 @@ app.post("/update/:role",async (req,res)=>{
     if(userId == req.body._id){
          // create a filter for a movie to update
         delete req.body._id
+        delete req.body.token
+        let Password;
+        let finalObj;
+        if(req.body.Password){
+            Password = await bcrypt.hash(req.body.Password,10)
+            finalObj = {
+                ...req.body,"Password":Password
+            }
+        }else{
+            finalObj = {
+                ...req.body
+            }
+        }
         const filter = {"_id": b[0]._id};
         const updateDoc = {
             $set: {
-              ...req.body
+              ...finalObj
             },
         };
         await collection.updateOne(filter, updateDoc).then((result)=>{
@@ -180,6 +119,105 @@ app.post("/update/:role",async (req,res)=>{
 })
 
 
+//with auth code signup and signin
+app.post("/add/role/:role", async (req, res) => {
+    let {role} = req.params
+    try{
+        if(role == req.body.Role){
+            let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users-auth" : "doctors-auth"
+
+            let collection = await getCollection(collectionName)
+            let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
+            let limiter = await collection.find({}).toArray()
+            
+            if(obj.length == 0 && limiter.length < 20){
+            //Encrypt user password
+                let {Password} = req.body
+                encryptedPassword = await bcrypt.hash(Password, 10);
+            
+                // Create user in our database
+                collection.insertOne({
+                    ...req.body,
+                    "Password": encryptedPassword
+                }).then((response)=>{
+                    const token = jwt.sign(
+                        { user_id: response.insertedId },
+                        TOKEN_KEY,
+                        {
+                        expiresIn: "24h",
+                        }
+                    );
+                    // save user token
+                    // return new user
+                    res.status(201).send({status:true,response:{...response},token:token});
+                }).catch((err)=>{
+                        if(err.code == 121){
+                            res.status(400).send(
+                                {status:false,errorMessage :err.errInfo.details.schemaRulesNotSatisfied}
+                            )
+                        }
+                        else{
+                            res.status(400).send ({status:false,errorMessage :'failining in catch'})
+                        }
+                })
+            }else{
+                res.status(200).send({status:false,errorMessage:"Email and Mobile are already used."})
+            }
+        }else{
+            res.status(400).send({status:false,errorMessage:"role in path and body not matched"})
+        }
+    }
+    catch (err) {
+        res.status(400).send({status:false,errorMessage:err})
+    }
+    // Our register logic ends here
+});
+
+app.post("/signin",async(req,res)=>{
+    try{
+        let collectionName = req.body.Role != "doctor" ? "users-auth" : "doctors-auth"
+
+        let collection = await getCollection(collectionName)
+        let obj = await collection.find({"Email":req.body.Email,"Role":req.body.Role}).toArray()
+        // console.log(obj)
+        // res.send(obj)
+        let userId = obj[0]._id.toString()
+        // console.log(req.body,obj)
+        if(obj.length > 0 && (await bcrypt.compare(req.body.Password, obj[0].Password))){
+        // if(role != "doctor"){
+            // Create token
+            const token = jwt.sign(
+                { user_id: userId },
+                TOKEN_KEY,
+                {
+                expiresIn: "24h",
+                }
+            );
+            res.status(200).send(
+                {
+                    status:true,
+                    token:token,
+                    response:[...obj]
+                }
+                // obj
+            )
+        }else{
+            res.status(200).send(
+                {
+                    status:false,
+                    errorMessage: "No user found."
+                }       
+            )
+        }
+    }catch(error){
+        res.status(400).send({
+            status:false,
+            errorMessage: error
+        })
+    }
+})
+
+
 app.listen(port,()=>{
     // getDatabasesAndCollections().then((res)=>{
     //     console.log(res)
@@ -193,7 +231,7 @@ app.listen(port,()=>{
     // getData("users")
     
     // insertHospitals()
-    // getData("users-auth")
+    // getData("users")
 
     
     // getCollectionsList("root-db").then((res)=>{
