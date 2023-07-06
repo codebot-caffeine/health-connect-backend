@@ -20,7 +20,7 @@ var app = exp()
 app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', '*');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 })
@@ -116,6 +116,15 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
     }
 
 
+})
+
+app.post("/insert/slots",async(req,res)=>{
+    // let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
+    let collection = await getCollection("doctors")
+    let b = await collection.findOne({"Email":req.body.Email}).toArray()
+    let userId = b[0]._id.toString()
+    
+    res.send(b)
 })
 
 
