@@ -48,7 +48,7 @@ app.get("/",(req,res)=>{
     res.send('running in 3000')
 })
 
-app.get("/list/hospitals",(req,response)=>{
+app.get("/list/hospitals",verifyToken,(req,response)=>{
     getData('hospitals').then((res)=>{
         console.log(res)
         response.status(200).send({
@@ -68,7 +68,7 @@ app.get("/list/hospitals",(req,response)=>{
 
 app.post("/update/:role",verifyToken,async (req,res)=>{
     let {role} = req.params
-    let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users-auth" : "doctors-auth"
+    let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
 
     let collection = await getCollection(collectionName)
     let b = await collection.find({"Email":req.body.Email}).toArray()
@@ -124,7 +124,7 @@ app.post("/add/role/:role", async (req, res) => {
     let {role} = req.params
     try{
         if(role == req.body.Role){
-            let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users-auth" : "doctors-auth"
+            let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
 
             let collection = await getCollection(collectionName)
             let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
@@ -175,7 +175,7 @@ app.post("/add/role/:role", async (req, res) => {
 
 app.post("/signin",async(req,res)=>{
     try{
-        let collectionName = req.body.Role != "doctor" ? "users-auth" : "doctors-auth"
+        let collectionName = req.body.Role != "doctor" ? "users" : "doctors"
 
         let collection = await getCollection(collectionName)
         let obj = await collection.find({"Email":req.body.Email,"Role":req.body.Role}).toArray()
@@ -222,10 +222,10 @@ app.listen(port,()=>{
     // getDatabasesAndCollections().then((res)=>{
     //     console.log(res)
     // })
-    console.log(`port started on ${port}`)
+    console.log(`server started on ${port}`)
     //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website"
-    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId"]
-    // modifyCollection("doctors-auth",fields)
+    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role"]
+    // modifyCollection("users",fields)
 
     // dropCollection("root-db","users-auth")
     // getData("users")
