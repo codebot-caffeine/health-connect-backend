@@ -127,10 +127,36 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
 app.post("/insert/slots",async(req,res)=>{
     // let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
     let collection = await getCollection("doctors")
-    let b = await collection.findOne({"Email":req.body.Email}).toArray()
+    let b = await collection.find({"Email":req.body.Email}).toArray()
+    // let userId = b._id.toString()
     let userId = b[0]._id.toString()
-    
-    res.send(b)
+    // let existingSlots = b.Slots ? b.Slots : []
+    // console.log(b.Slots,b)
+
+    if(userId == req.body._id && req.body.Slots){
+        const filter = {"_id": b[0]._id};
+        const updateDoc = {
+            $addToSet: {
+              Slots: {$each : req.body.Slots}
+            },
+        };
+        await collection.updateOne(filter, updateDoc).then((result)=>{
+            res.status(200).send({
+                status:true,
+                response: `${result.matchedCount} document(s) matched the filter, added slots ${result.modifiedCount} document(s)`
+            })
+        }).catch((error)=>{
+            res.status(200).send({
+                status:false,
+                errorMessage: error
+            })
+        });
+    }else{      
+        res.status(400).send({
+                status:false,
+                errorMessage:'Email and id are not found.'
+        })       
+    }
 })
 
 

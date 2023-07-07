@@ -59,10 +59,28 @@ async function modifyCollection(collectionName,fields){//collection creation wit
                 description: "Required."
             }
         }
-        else if(e == "Slots" || e == "Consultations" || e == "Doctors"){
+        else if( e == "Consultations" || e == "Doctors"){
             obj[e] = {
                 bsonType : ["array","undefined","object"],
                 description: "Optional"
+            }
+        }else if( e == "Slots"){
+            obj[e] = {
+                bsonType : "array",
+                items: {
+                    bsonType: "object",
+                    required:["StartTime","EndTime"],
+                    properties:{
+                        StartTime:{
+                            bsonType: "number",
+                            description: "must be a string and is required"
+                        },
+                        EndTime:{
+                            bsonType: "number",
+                            description: "must be a number and is required"
+                        }
+                    }
+                },
             }
         }
         else{

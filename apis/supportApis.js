@@ -17,6 +17,24 @@ async function insertHospitals(){
     })
 }
 
+ //     const filter = {"_id": b[0]._id};
+        //     const deleteDoc = {
+        //         $unset:{
+        //             Slots: []
+        //         }
+        //     }
+        //    await collection.updateOne(filter, deleteDoc).then((result)=>{
+        //         res.status(200).send({
+        //             status:true,
+        //             response: `${result.matchedCount} document(s) matched the filter, added slots ${result.modifiedCount} document(s)`
+        //         })
+        //     }).catch((error)=>{
+        //         res.status(200).send({
+        //             status:false,
+        //             errorMessage: error
+        //         })
+        //     });
+
 // app.post("/register/:role", async (req, res) => {
 //     let {role} = req.params
 //     try{
