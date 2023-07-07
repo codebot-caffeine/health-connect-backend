@@ -36,25 +36,31 @@ async function getCollection(collectionName){
     return collection
 }
 
-async function getData(cName){
+async function getData(cName,page,pageSize){
     let result = await client.connect();
     db = result.db("root-db")
-    let v = await db.collection(cName).find({}).toArray()
-    console.log(v,"data")
-    return v
+    let v = await db.collection(cName).find({}).sort("HospitalId").skip(page*pageSize).limit(pageSize).toArray()
+    // console.log(v,"data")
+    let total =  await db.collection(cName).countDocuments()
+    return {response:v,total:total}
 }
 
 app.get("/",(req,res)=>{
     res.send('running in 3000')
 })
 
-app.get("/list/hospitals",verifyToken,(req,response)=>{
-    getData('hospitals').then((res)=>{
-        console.log(res)
+app.get(`/list/hospitals`,(req,response)=>{
+    let page  = parseInt(req.query.page ? req.query.page : 0)
+    let pageSize = parseInt(req.query.pageSize? req.query.pageSize : 20)
+
+    getData('hospitals',page,pageSize).then((res)=>{
         response.status(200).send({
             status:true,
             response:[
-                {hospitals : [...res]}
+                {
+                    hospitals : [...res.response],
+                    total:res.total
+                },
             ]
         })
     }).catch((err)=>{
