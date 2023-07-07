@@ -49,7 +49,7 @@ app.get("/",(req,res)=>{
     res.send('running in 3000')
 })
 
-app.get(`/list/hospitals`,(req,response)=>{
+app.get(`/list/hospitals`,verifyToken,(req,response)=>{
     let page  = parseInt(req.query.page ? req.query.page : 0)
     let pageSize = parseInt(req.query.pageSize? req.query.pageSize : 20)
 
@@ -124,7 +124,7 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
 
 })
 
-app.post("/insert/slots",async(req,res)=>{
+app.post("/insert/slots",verifyToken,async(req,res)=>{
     // let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
     let collection = await getCollection("doctors")
     let b = await collection.find({"Email":req.body.Email}).toArray()
