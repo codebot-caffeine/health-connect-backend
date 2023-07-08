@@ -45,6 +45,15 @@ async function getData(cName,page,pageSize){
     return {response:v,total:total}
 }
 
+async function getDataFromCollection(cName,filter){
+    let result = await client.connect();
+    db = result.db("root-db") //.skip(page*pageSize).limit(pageSize)
+    let v = await db.collection(cName).find(filter).sort("HospitalId").toArray()
+    // console.log(v,"data")
+    let total =  await db.collection(cName).countDocuments()
+    return {response:v,total:total}
+}
+
 app.get("/",(req,res)=>{
     res.send('running in 3000')
 })
@@ -59,6 +68,38 @@ app.get(`/list/hospitals`,verifyToken,(req,response)=>{
             response:[
                 {
                     hospitals : [...res.response],
+                    total:res.total
+                },
+            ]
+        })
+    }).catch((err)=>{
+        response.status(400).send({
+            status:false,
+            errorMessage: err
+        })
+    })
+    // res.send('running in 3000')
+})
+
+app.get(`/get/doctors`,verifyToken,(req,response)=>{
+    let id  = parseInt(req.query.id)
+    // let pageSize = parseInt(req.query.pageSize? req.query.pageSize : 20)
+
+    getDataFromCollection('doctors',{"HospitalId":id}).then((res)=>{
+        let data = res.response.map((e)=>{
+            return {
+                Name : e.Name,
+                _id : e._id,
+                Specalization:e.Specalization,
+                Slots:e.Slots,
+                HospitalId:e.HospitalId
+            }
+        })
+        response.status(200).send({
+            status:true,
+            response:[
+                {
+                    Doctors : [...data],
                     total:res.total
                 },
             ]
