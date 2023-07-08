@@ -39,7 +39,13 @@ async function getCollection(collectionName){
 async function getData(cName,page,pageSize){
     let result = await client.connect();
     db = result.db("root-db")
-    let v = await db.collection(cName).find({}).sort("HospitalId").skip(page*pageSize).limit(pageSize).toArray()
+    let v;
+    if(page == -1 && pageSize == -1){
+        v = await db.collection(cName).find({}).toArray()
+    }
+    else{
+        v = await db.collection(cName).find({}).sort("HospitalId").skip(page*pageSize).limit(pageSize).toArray()
+    }
     // console.log(v,"data")
     let total =  await db.collection(cName).countDocuments()
     return {response:v,total:total}
@@ -58,9 +64,9 @@ app.get("/",(req,res)=>{
     res.send('running in 3000')
 })
 
-app.get(`/list/hospitals`,verifyToken,(req,response)=>{
-    let page  = parseInt(req.query.page ? req.query.page : 0)
-    let pageSize = parseInt(req.query.pageSize? req.query.pageSize : 20)
+app.get(`/list/hospitals`,(req,response)=>{
+    let page  = parseInt(req.query.page ? req.query.page : -1)
+    let pageSize = parseInt(req.query.pageSize? req.query.pageSize : -1)
 
     getData('hospitals',page,pageSize).then((res)=>{
         response.status(200).send({
@@ -140,7 +146,7 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
         }
         const filter = {"_id": b[0]._id};
         const updateDoc = {
-            $addToSet: {
+            $set: {
               ...finalObj
             },
         };
