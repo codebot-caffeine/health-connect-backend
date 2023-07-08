@@ -140,7 +140,7 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
         }
         const filter = {"_id": b[0]._id};
         const updateDoc = {
-            $set: {
+            $addToSet: {
               ...finalObj
             },
         };
