@@ -54,9 +54,10 @@ async function getData(cName,page,pageSize){
 async function getDataFromCollection(cName,filter){
     let result = await client.connect();
     db = result.db("root-db") //.skip(page*pageSize).limit(pageSize)
-    let v = await db.collection(cName).find(filter).sort("HospitalId").toArray()
+    let v = await db.collection(cName).find(filter).toArray()
     // console.log(v,"data")
     let total =  await db.collection(cName).countDocuments()
+    console.log(v)
     return {response:v,total:total}
 }
 
@@ -221,6 +222,54 @@ app.post("/insert/slots",verifyToken,async(req,res)=>{
     }
 })
 
+app.post("/book/consultation",verifyToken,async (req,res)=>{
+    let {User,Doctor,Hospital,Slot} = req.body
+    let userobj = await getDataFromCollection('users',{Email: User.Email})
+    let doctorObj =   await getDataFromCollection('doctors',{Email: Doctor.Email})
+    let HospitalObj =   await getDataFromCollection('hospitals',{HospitalId: Hospital.HospitalId})
+    delete userobj.response[0].Password
+    delete doctorObj.response[0].Password
+    delete doctorObj.response[0].Slots
+    // console.log(userobj.response,doctorObj.response,HospitalObj.response,"from insert")
+    if(userobj.response.length > 0 && doctorObj.response.length > 0 && HospitalObj.response.length > 0 && Slot){
+        let doccollection = await getCollection("doctors")
+        let b = await doccollection.find({"Email":Doctor.Email}).toArray()
+            // let userId = b._id.toString()
+        let docId = b[0]._id.toString()
+
+        let consultationcol = await getCollection("consultations")
+        consultationcol.updateOne({
+           "BookedSlot": Slot
+        },{
+           $setOnInsert: {User : userobj.response[0],
+            Doctor : doctorObj.response[0],
+            BookedSlot : Slot,
+            Hospital : HospitalObj.response[0]}
+        }).then(async (response)=>{
+            let slotsUpdation;
+            doccollection.updateOne({"_id": b[0]._id},{ $pull: { Slots: Slot } }).then((output)=>{
+              slotsUpdation = true
+            }).catch((error)=>{
+                slotsUpdation = false
+            })
+            res.status(201).send({status:true,response:{...response},slotRemoved:slotsUpdation})
+        }).catch((error)=>{
+            console.log(error)
+            res.status(200).send({
+                status:false,
+                errorMessage: "Error while adding consultation"
+            })
+        })
+        
+    }else{
+        res.status(400).send({
+            status:false,
+            errorMessage:"Send all required fields"
+        })
+    }
+
+})
+
 
 //with auth code signup and signin
 app.post("/add/role/:role", async (req, res) => {
@@ -327,16 +376,18 @@ app.listen(port,()=>{
     // })
     console.log(`server started on ${port}`)
     //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website"
-    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role"]
-    // modifyCollection("users",fields)
+    let fields = ["User","Doctor","BookedSlot","Hospital","Prescription"]
+    // modifyCollection("consultations",fields)
 
     // dropCollection("root-db","users-auth")
     // getData("users")
     
     // insertHospitals()
     // getData("users")
+    // getData("doctors")
 
-    
+    // getDataFromCollection('users',{})
+    // getDataFromCollection('consultations',{})
     // getCollectionsList("root-db").then((res)=>{
     //     console.log(res)
     // })
