@@ -99,7 +99,8 @@ app.get(`/get/doctors`,verifyToken,(req,response)=>{
                 Specalization:e.Specalization,
                 Slots:e.Slots,
                 HospitalId:e.HospitalId,
-                Experience:e.Experience
+                Experience:e.Experience,
+                Qualification:e.Qualification
             }
         })
         response.status(200).send({
