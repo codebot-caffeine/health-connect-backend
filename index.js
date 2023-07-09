@@ -231,7 +231,7 @@ app.post("/insert/slots",async(req,res)=>{
     }
 })
 
-app.post("/book/consultation",verifyToken,async (req,res)=>{
+app.post("/book/consultation",async (req,res)=>{
     let {User,Doctor,Hospital,Slot} = req.body
     let userobj = await getDataFromCollection('users',{Email: User.Email})
     let doctorObj =   await getDataFromCollection('doctors',{Email: Doctor.Email})
@@ -254,7 +254,7 @@ app.post("/book/consultation",verifyToken,async (req,res)=>{
             Doctor : doctorObj.response[0],
             BookedSlot : Slot,
             Hospital : HospitalObj.response[0]}
-        }).then(async (response)=>{
+        },{upsert:true}).then(async (response)=>{
             let slotsUpdation;
             doccollection.updateOne({"_id": b[0]._id},{ $pull: { Slots: Slot } }).then((output)=>{
               slotsUpdation = true
