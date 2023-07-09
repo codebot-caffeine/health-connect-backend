@@ -57,7 +57,7 @@ async function getDataFromCollection(cName,filter){
     let v = await db.collection(cName).find(filter).toArray()
     // console.log(v,"data")
     let total =  await db.collection(cName).countDocuments()
-    console.log(v)
+    // console.log(v)
     return {response:v,total:total}
 }
 
