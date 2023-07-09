@@ -195,7 +195,12 @@ app.post("/insert/slots",verifyToken,async(req,res)=>{
             return e
         }
     })
-    let slotsToSet = [...newSlots,...req.body.Slots]
+    let slotsToSet = []
+    if(newSlots.length == 0){
+       slotsToSet = [...req.body.Slots]
+    }else{
+        slotsToSet = [...newSlots,...req.body.Slots]
+    }
     // console.log(slotsToSet)
     if(userId == req.body._id && req.body.Slots){
         const filter = {"_id": b[0]._id};
