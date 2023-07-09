@@ -98,7 +98,8 @@ app.get(`/get/doctors`,verifyToken,(req,response)=>{
                 _id : e._id,
                 Specalization:e.Specalization,
                 Slots:e.Slots,
-                HospitalId:e.HospitalId
+                HospitalId:e.HospitalId,
+                Experience:e.Experience
             }
         })
         response.status(200).send({
@@ -179,12 +180,25 @@ app.post("/insert/slots",verifyToken,async(req,res)=>{
     let userId = b[0]._id.toString()
     // let existingSlots = b.Slots ? b.Slots : []
     // console.log(b.Slots,b)
-
+    let date  = new Date(req.body.Slots[0].StartTime).getDate()
+    let month = new Date(req.body.Slots[0].StartTime).getMonth()
+    let year =  new Date(req.body.Slots[0].StartTime).getFullYear()
+    let newSlots = b[0].Slots.filter((e)=>{
+        // console.log(date,month,year)
+        // console.log(new Date(e.StartTime).getDate(),new Date(e.StartTime).getMonth(),new Date(e.StartTime).getFullYear(),"from e")
+        let bool = new Date(e.StartTime).getDate() == date && new Date(e.StartTime).getMonth() == month && new Date(e.StartTime).getFullYear() == year
+        if(!bool){
+            // console.log(true)
+            return e
+        }
+    })
+    let slotsToSet = [...newSlots,...req.body.Slots]
+    // console.log(slotsToSet)
     if(userId == req.body._id && req.body.Slots){
         const filter = {"_id": b[0]._id};
         const updateDoc = {
-            $addToSet: {
-              Slots: {$each : req.body.Slots}
+            $set: {
+              Slots:  slotsToSet
             },
         };
         await collection.updateOne(filter, updateDoc).then((result)=>{
