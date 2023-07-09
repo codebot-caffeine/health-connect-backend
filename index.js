@@ -175,33 +175,36 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
 
 })
 
-app.post("/insert/slots",verifyToken,async(req,res)=>{
+app.post("/insert/slots",async(req,res)=>{
     // let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
     let collection = await getCollection("doctors")
     let b = await collection.find({"Email":req.body.Email}).toArray()
     // let userId = b._id.toString()
     let userId = b[0]._id.toString()
     // let existingSlots = b.Slots ? b.Slots : []
-    // console.log(b.Slots,b)
+    console.log(b.Slots,b)
     let date  = new Date(req.body.Slots[0].StartTime).getDate()
     let month = new Date(req.body.Slots[0].StartTime).getMonth()
     let year =  new Date(req.body.Slots[0].StartTime).getFullYear()
-    let newSlots = b[0].Slots.filter((e)=>{
-        // console.log(date,month,year)
-        // console.log(new Date(e.StartTime).getDate(),new Date(e.StartTime).getMonth(),new Date(e.StartTime).getFullYear(),"from e")
-        let bool = new Date(e.StartTime).getDate() == date && new Date(e.StartTime).getMonth() == month && new Date(e.StartTime).getFullYear() == year
-        if(!bool){
-            // console.log(true)
-            return e
-        }
-    })
+    let newSlots = []
+    if(b[0].Slots){
+        newSlots = b[0].Slots.filter((e)=>{
+            // console.log(date,month,year)
+            // console.log(new Date(e.StartTime).getDate(),new Date(e.StartTime).getMonth(),new Date(e.StartTime).getFullYear(),"from e")
+            let bool = new Date(e.StartTime).getDate() == date && new Date(e.StartTime).getMonth() == month && new Date(e.StartTime).getFullYear() == year
+            if(!bool){
+                // console.log(true)
+                return e
+            }
+        })
+    }
     let slotsToSet = []
     if(newSlots.length == 0){
        slotsToSet = [...req.body.Slots]
     }else{
         slotsToSet = [...newSlots,...req.body.Slots]
     }
-    // console.log(slotsToSet)
+    console.log(slotsToSet)
     if(userId == req.body._id && req.body.Slots){
         const filter = {"_id": b[0]._id};
         const updateDoc = {
