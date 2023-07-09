@@ -182,7 +182,7 @@ app.post("/insert/slots",async(req,res)=>{
     // let userId = b._id.toString()
     let userId = b[0]._id.toString()
     // let existingSlots = b.Slots ? b.Slots : []
-    console.log(b.Slots,b)
+    // console.log(b.Slots,b)
     let date  = new Date(req.body.Slots[0].StartTime).getDate()
     let month = new Date(req.body.Slots[0].StartTime).getMonth()
     let year =  new Date(req.body.Slots[0].StartTime).getFullYear()
@@ -204,7 +204,7 @@ app.post("/insert/slots",async(req,res)=>{
     }else{
         slotsToSet = [...newSlots,...req.body.Slots]
     }
-    console.log(slotsToSet)
+    // console.log(slotsToSet)
     if(userId == req.body._id && req.body.Slots){
         const filter = {"_id": b[0]._id};
         const updateDoc = {
