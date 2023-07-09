@@ -279,13 +279,19 @@ app.post("/book/consultation",async (req,res)=>{
 
 })
 
-// app.get("get/consultations/:role",async(req,res)=>{
-//     let role = req.params.role
-//     let {id} = req.query
-//     let consultationcol = await getCollection("consultations")
-//     let filter = role == 'user' ? {"Email" : {$in: [req.params.Email]}} : {}
-//     await consultationcol.find({filter}).toArray()
-// })
+app.get("/get/consultations/:role",async(req,res)=>{
+    let role = req.params.role
+    let {id} = req.query
+    let consultationcol = await getCollection("consultations")
+    let filter = role == 'user' ? {"User.Email" : req.query.Email} : {"Doctor.Email" : req.query.Email}
+    let obtained = await consultationcol.find(filter).toArray()
+    if(obtained){
+        res.status(200).send({status:true,response:obtained})
+    }
+    else{
+        res.status(200).send({status:false,errorMessage:'No Data Found'})
+    }
+})
 
 
 //with auth code signup and signin
