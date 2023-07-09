@@ -101,7 +101,8 @@ app.get(`/get/doctors`,verifyToken,(req,response)=>{
                 Slots:e.Slots,
                 HospitalId:e.HospitalId,
                 Experience:e.Experience,
-                Qualification:e.Qualification
+                Qualification:e.Qualification,
+                Email: e.Email
             }
         })
         response.status(200).send({
@@ -269,6 +270,14 @@ app.post("/book/consultation",verifyToken,async (req,res)=>{
     }
 
 })
+
+// app.get("get/consultations/:role",async(req,res)=>{
+//     let role = req.params.role
+//     let {id} = req.query
+//     let consultationcol = await getCollection("consultations")
+//     let filter = role == 'user' ? {"Email" : {$in: [req.params.Email]}} : {}
+//     await consultationcol.find({filter}).toArray()
+// })
 
 
 //with auth code signup and signin
