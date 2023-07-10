@@ -41,7 +41,7 @@ async function modifyCollection(collectionName,fields){//collection creation wit
     let db0 = await connection.db("root-db")
     // if(e == 'Email' || e == "Postcode" || e == "Experience" || e == "Mobile" || e == "DOB")
     for (let e of fields){
-        if(e == 'Age'  || e == "Experience"){
+        if(e == 'Age'  || e == "Experience" || e== "Days"){
            obj[e] = {
             bsonType: ["int"],
             description: "Required."
@@ -53,7 +53,7 @@ async function modifyCollection(collectionName,fields){//collection creation wit
                 description: "Required."
             }
         }
-        else if(e == "Password" || e == "Email" || e =="HospitalName" || e=="HospitalId"){
+        else if(e == "Password" || e == "Email" || e =="HospitalName" || e=="HospitalId" || e == "ConsultationId"){
             obj[e] = {
                 bsonType: ["string","int"],
                 description: "Required."
@@ -82,6 +82,25 @@ async function modifyCollection(collectionName,fields){//collection creation wit
                     }
                 },
             }
+        }else if(e=="Dosage"){
+            obj[e] = {
+                bsonType : "object", 
+                required:["Morning","AfterNoon","Night"],
+                properties:{
+                    Morning:{
+                        bsonType: "bool",
+                        description: "must be a string and is required"
+                    },
+                    AfterNoon:{
+                        bsonType: "bool",
+                        description: "must be a number and is required"
+                    },
+                    Night:{
+                        bsonType: "bool",
+                        description: "must be a number and is required"
+                    }
+                }          
+            }
         }
         else{
             obj[e] = {
@@ -94,7 +113,7 @@ async function modifyCollection(collectionName,fields){//collection creation wit
     newFields.filter(x => (x == 'Slots' || x == "Consultations" || x == "Doctors" || x == "Website" || x == "Prescription")).forEach(x => fields.splice(fields.indexOf(x), 1));
     console.log(obj,newFields)
 
-    let value = db0.createCollection(collectionName,{
+    db0.createCollection(collectionName,{
         validator:{
           $jsonSchema: {
             bsonType: "object",
@@ -104,8 +123,10 @@ async function modifyCollection(collectionName,fields){//collection creation wit
             }
           }
         }
-      })
-    return value
+    }).then((res)=>{
+        console.log(res)
+    })
+    // return value
 }
 // Name
 // Gender

@@ -279,6 +279,23 @@ app.post("/book/consultation",async (req,res)=>{
 
 })
 
+app.post("/add/prescription",async(req,res)=>{
+    // let {body} = req
+    let prescription = await getCollection('prescriptions')
+    prescription.updateOne({
+        'ConsultationId' : req.body.ConsultationId
+    }
+    ,{
+        ...req.body
+    },{
+        upsert: true
+    }).then((response)=>{
+        res.status(201).send({status:true,response:{...response}});
+    }).catch((err)=>{    
+        res.status(400).send ({status:false,errorMessage :'Failed to insert prescription'})
+    })
+})
+
 app.get("/get/consultations/:role",async(req,res)=>{
     let role = req.params.role
     let page = req.query.page ?  parseInt(req.query.page) : -1
@@ -400,9 +417,9 @@ app.listen(port,()=>{
     //     console.log(res)
     // })
     console.log(`server started on ${port}`)
-    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website"
-    let fields = ["User","Doctor","BookedSlot","Hospital","Prescription"]
-    // modifyCollection("consultations",fields)
+    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website""User","Doctor","BookedSlot","Hospital","Prescription"
+    let fields = ["DrugName","Dosage","Days","ConsultationId","Comments"]
+    // modifyCollection("prescriptions",fields)
 
     // dropCollection("root-db","users-auth")
     // getData("users")
