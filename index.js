@@ -286,8 +286,9 @@ app.get("/get/consultations/:role",async(req,res)=>{
     let consultationcol = await getCollection("consultations")
     let filter = role == 'user' ? {"User.Email" : req.query.Email} : {"Doctor.Email" : req.query.Email}
     let obtained = page == -1 ? await consultationcol.find(filter).toArray() : await consultationcol.find(filter).skip(page*pageSize).limit(pageSize).toArray()
+    let countdoc = await consultationcol.countDocuments()
     if(obtained){
-        res.status(200).send({status:true,response:obtained,total : consultationcol.countDocuments()})
+        res.status(200).send({status:true,response:obtained,total : countdoc})
     }
     else{
         res.status(200).send({status:false,errorMessage:'No Data Found'})
