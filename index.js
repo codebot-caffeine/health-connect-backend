@@ -44,7 +44,7 @@ async function getData(cName,page,pageSize){
         v = await db.collection(cName).find({}).toArray()
     }
     else{
-        v = await db.collection(cName).find({}).sort("HospitalId").skip(page*pageSize).limit(pageSize).toArray()
+        v = await db.collection(cName).find({}).skip(page*pageSize).limit(pageSize).toArray()
     }
     // console.log(v,"data")
     let total =  await db.collection(cName).countDocuments()
@@ -281,12 +281,13 @@ app.post("/book/consultation",async (req,res)=>{
 
 app.get("/get/consultations/:role",async(req,res)=>{
     let role = req.params.role
-    let {id} = req.query
+    let page = req.query.page ?  parseInt(req.query.page) : -1
+    let pageSize = req.query.pageSize ?  parseInt(req.query.pageSize) : -1
     let consultationcol = await getCollection("consultations")
     let filter = role == 'user' ? {"User.Email" : req.query.Email} : {"Doctor.Email" : req.query.Email}
-    let obtained = await consultationcol.find(filter).toArray()
+    let obtained = page == -1 ? await consultationcol.find(filter).toArray() : await consultationcol.find(filter).skip(page*pageSize).limit(pageSize).toArray()
     if(obtained){
-        res.status(200).send({status:true,response:obtained})
+        res.status(200).send({status:true,response:obtained,total : consultationcol.countDocuments()})
     }
     else{
         res.status(200).send({status:false,errorMessage:'No Data Found'})
