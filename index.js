@@ -254,8 +254,7 @@ app.post("/book/consultation",verifyToken,async (req,res)=>{
            $setOnInsert: {User : userobj.response[0],
             Doctor : doctorObj.response[0],
             BookedSlot : Slot,
-            Hospital : HospitalObj.response[0]},
-            Prescription:req.body.Prescription
+            Hospital : HospitalObj.response[0], Prescription:req.body.Prescription}
         },{upsert:true}).then(async (response)=>{
             let slotsUpdation;
             doccollection.updateOne({"_id": b[0]._id},{ $pull: { Slots: Slot } }).then((output)=>{
@@ -449,9 +448,9 @@ app.listen(port,()=>{
     //     console.log(res)
     // })
     console.log(`server started on ${port}`)
-    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website""User","Doctor","BookedSlot","Hospital","Prescription"
-    let fields = ["DrugName","Dosage","Days","ConsultationId","Comments"]
-    // modifyCollection("prescriptions",fields)
+    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
+    let fields = ["User","Doctor","BookedSlot","Hospital","Prescription"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
+    // modifyCollection("consultations",fields)
 
     // dropCollection("root-db","users-auth")
     // getData("users")

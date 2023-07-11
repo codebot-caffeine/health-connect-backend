@@ -110,7 +110,7 @@ async function modifyCollection(collectionName,fields){//collection creation wit
         }
     }
     let newFields = fields
-    newFields.filter(x => (x == 'Slots' || x == "Consultations" || x == "Doctors" || x == "Website" || x == "Prescription")).forEach(x => fields.splice(fields.indexOf(x), 1));
+    newFields.filter(x => (x == 'Slots' || x == "Consultations" || x == "Doctors" || x == "Website")).forEach(x => fields.splice(fields.indexOf(x), 1));
     console.log(obj,newFields)
 
     db0.createCollection(collectionName,{
