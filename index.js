@@ -427,7 +427,7 @@ app.post("/signin",async(req,res)=>{
     }catch(error){
         res.status(400).send({
             status:false,
-            errorMessage: error
+            errorMessage: "Please check the details provided."
         })
     }
 })
