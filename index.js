@@ -9,6 +9,7 @@ var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollect
 var {insertHospitals} = require('./apis/supportApis')
 var{TOKEN_KEY} = require("./key")
 var{verifyToken} = require('./middleware/auth')
+const { ObjectId } = require("mongodb")
 
 var MongoClient = require("mongodb").MongoClient
 
@@ -175,7 +176,7 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
 
 })
 
-app.post("/insert/slots",async(req,res)=>{
+app.post("/insert/slots",verifyToken,async(req,res)=>{
     // let collectionName = req.body.Role != "doctor" && role != "doctor" ? "users" : "doctors"
     let collection = await getCollection("doctors")
     let b = await collection.find({"Email":req.body.Email}).toArray()
@@ -231,7 +232,7 @@ app.post("/insert/slots",async(req,res)=>{
     }
 })
 
-app.post("/book/consultation",async (req,res)=>{
+app.post("/book/consultation",verifyToken,async (req,res)=>{
     let {User,Doctor,Hospital,Slot} = req.body
     let userobj = await getDataFromCollection('users',{Email: User.Email})
     let doctorObj =   await getDataFromCollection('doctors',{Email: Doctor.Email})
@@ -279,7 +280,7 @@ app.post("/book/consultation",async (req,res)=>{
 
 })
 
-app.post("/add/prescription",async(req,res)=>{
+app.post("/add/prescription",verifyToken,async(req,res)=>{
     // let {body} = req
     let prescription = await getCollection('prescriptions')
     prescription.updateOne({
@@ -296,7 +297,7 @@ app.post("/add/prescription",async(req,res)=>{
     })
 })
 
-app.get("/get/consultations/:role",async(req,res)=>{
+app.get("/get/consultations/:role",verifyToken,async(req,res)=>{
     let role = req.params.role
     let page = req.query.page ?  parseInt(req.query.page) : -1
     let pageSize = req.query.pageSize ?  parseInt(req.query.pageSize) : -1
@@ -309,6 +310,26 @@ app.get("/get/consultations/:role",async(req,res)=>{
     }
     else{
         res.status(200).send({status:false,errorMessage:'No Data Found'})
+    }
+})
+
+app.get("/get/prescriptions/:consultationId",verifyToken,async(req,res)=>{
+    let {consultationId} = req.params
+
+    let data = await getCollection('prescriptions').findOne({"ConsultationId" : consultationId}).toArray()
+
+    if(data){
+       res.status(201).send({
+        status:true,
+        response:{
+            ...data
+        }
+       })
+    }else{
+        res.status(200).send({
+            status:false,
+            errorMessage:"No prescriptions found for Consultation"
+        })
     }
 })
 
