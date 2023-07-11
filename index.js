@@ -254,7 +254,8 @@ app.post("/book/consultation",verifyToken,async (req,res)=>{
            $setOnInsert: {User : userobj.response[0],
             Doctor : doctorObj.response[0],
             BookedSlot : Slot,
-            Hospital : HospitalObj.response[0]}
+            Hospital : HospitalObj.response[0]},
+            Prescription:req.body.Prescription
         },{upsert:true}).then(async (response)=>{
             let slotsUpdation;
             doccollection.updateOne({"_id": b[0]._id},{ $pull: { Slots: Slot } }).then((output)=>{
@@ -282,19 +283,29 @@ app.post("/book/consultation",verifyToken,async (req,res)=>{
 
 app.post("/add/prescription",verifyToken,async(req,res)=>{
     // let {body} = req
-    let prescription = await getCollection('prescriptions')
-    prescription.updateOne({
+    let prescCollection = await getCollection('prescriptions')
+    let obj = prescCollection.find({
         'ConsultationId' : req.body.ConsultationId
+    }).toArray()
+    if(obj.length == 0){
+        prescCollection.insertOne({
+            ...req.body
+        }).then(async (response)=>{
+            const filter = {'_id' : new ObjectId(req.body.ConsultationId)};
+            const updateDoc = {
+                $set: {
+                  Prescription:  response.insertedId
+                },
+            };
+            await getCollection('consultations').updateOne(filter,updateDoc)
+            res.status(201).send({status:true,response:{...response}});
+        }).catch((err)=>{    
+            res.status(400).send ({status:false,errorMessage :'Failed to insert prescription'})
+        })
+    }else{
+        res.status(400).send ({status:false,errorMessage :'Already Prescription is added'})
     }
-    ,{
-        ...req.body
-    },{
-        upsert: true
-    }).then((response)=>{
-        res.status(201).send({status:true,response:{...response}});
-    }).catch((err)=>{    
-        res.status(400).send ({status:false,errorMessage :'Failed to insert prescription'})
-    })
+  
 })
 
 app.get("/get/consultations/:role",verifyToken,async(req,res)=>{
