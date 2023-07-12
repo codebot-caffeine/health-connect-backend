@@ -3,6 +3,7 @@ var exp = require("express")
 var cors = require('cors')
 var bcrypt = require("bcryptjs")
 var jwt  = require("jsonwebtoken")
+let nodeGeocoder = require('node-geocoder');
 
 //imports from made moduels
 var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollection, createDb} = require("./apis/editCollections")
@@ -10,6 +11,14 @@ var {insertHospitals} = require('./apis/supportApis')
 var{TOKEN_KEY} = require("./key")
 var{verifyToken} = require('./middleware/auth')
 const { ObjectId } = require("mongodb")
+
+//geo coder testing
+let options = {
+    provider: 'openstreetmap'
+  };
+   
+let geoCoder = nodeGeocoder(options);
+
 
 var MongoClient = require("mongodb").MongoClient
 
@@ -139,12 +148,38 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
         delete req.body.token
         let Password;
         let finalObj;
-        if(req.body.Password){
+        let location
+        if(req.body.Password && !req.body.Address){
             Password = await bcrypt.hash(req.body.Password,10)
             finalObj = {
                 ...req.body,"Password":Password
             }
-        }else{
+        }else if(req.body.Address && !req.body.Password){
+            geoCoder.geocode(req.body.Address)
+            .then((res)=> {
+              location = res;
+            })
+            .catch((err)=> {
+            console.log(err);
+            });
+            finalObj = {
+                ...req.body,"Location":location
+            }
+        }
+        else if(req.body.Password && req.body.Address){
+            Password = await bcrypt.hash(req.body.Password,10)
+            geoCoder.geocode(req.body.Address)
+            .then((res)=> {
+              location = res;
+            })
+            .catch((err)=> {
+            console.log(err);
+            });
+            finalObj = {
+                ...req.body,"Password":Password,"Location":location
+            }
+        }
+        else{
             finalObj = {
                 ...req.body
             }
@@ -344,6 +379,17 @@ app.get("/get/prescriptions/:consultationId",verifyToken,async(req,res)=>{
 })
 
 
+
+// function geoCode(address){
+//     geoCoder.geocode(address)
+//     .then((res)=> {
+//       console.log(res);
+//     })
+//     .catch((err)=> {
+//       console.log(err);
+//     }); 
+// }
+
 //with auth code signup and signin
 app.post("/add/role/:role", async (req, res) => {
     let {role} = req.params
@@ -354,6 +400,14 @@ app.post("/add/role/:role", async (req, res) => {
             let collection = await getCollection(collectionName)
             let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
             let limiter = await collection.find({}).toArray()
+            let location;
+            geoCoder.geocode(req.body.Address)
+            .then((res)=> {
+            location = res
+            })
+            .catch((err)=> {
+            console.log(err);
+            }); 
             
             if(obj.length == 0 && limiter.length < 20){
             //Encrypt user password
@@ -363,7 +417,8 @@ app.post("/add/role/:role", async (req, res) => {
                 // Create user in our database
                 collection.insertOne({
                     ...req.body,
-                    "Password": encryptedPassword
+                    "Password": encryptedPassword,
+                    "Location":  location
                 }).then((response)=>{
                     const token = jwt.sign(
                         { user_id: response.insertedId },
@@ -449,9 +504,9 @@ app.listen(port,()=>{
     // })
     console.log(`server started on ${port}`)
     //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
-    let fields = ["User","Doctor","BookedSlot","Hospital","Prescription"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
-    // modifyCollection("consultations",fields)
-
+    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Address","Location","Experience","Specalization","HospitalId"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
+    // modifyCollection("doctors",fields)
+    // geoCode(' rk beach Visakhapatnam')
     // dropCollection("root-db","users-auth")
     // getData("users")
     

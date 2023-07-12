@@ -59,9 +59,9 @@ async function modifyCollection(collectionName,fields){//collection creation wit
                 description: "Required."
             }
         }
-        else if( e == "Consultations" || e == "Doctors" || e == "User"|| e == "Doctor" || e== "BookedSlot" || e == "Hospital"){
+        else if( e == "Consultations" || e == "Doctors" || e == "User"|| e == "Doctor" || e== "BookedSlot" || e == "Hospital" || e == "Location"){
             obj[e] = {
-                bsonType : ["object"],
+                bsonType : ["object","array"],
                 description: "Optional"
             }
         }else if( e == "Slots"){
