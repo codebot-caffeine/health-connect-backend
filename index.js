@@ -4,6 +4,8 @@ var cors = require('cors')
 var bcrypt = require("bcryptjs")
 var jwt  = require("jsonwebtoken")
 let nodeGeocoder = require('node-geocoder');
+const excelToJson = require('convert-excel-to-json');
+const fs = require('fs');
 
 //imports from made moduels
 var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollection, createDb} = require("./apis/editCollections")
@@ -155,7 +157,7 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
                 ...req.body,"Password":Password
             }
         }else if(req.body.Address && !req.body.Password){
-            geoCoder.geocode(req.body.Address)
+            await geoCoder.geocode(req.body.Address)
             .then((res)=> {
               location = res;
             })
@@ -168,7 +170,7 @@ app.post("/update/:role",verifyToken,async (req,res)=>{
         }
         else if(req.body.Password && req.body.Address){
             Password = await bcrypt.hash(req.body.Password,10)
-            geoCoder.geocode(req.body.Address)
+            await geoCoder.geocode(req.body.Address)
             .then((res)=> {
               location = res;
             })
@@ -401,14 +403,14 @@ app.post("/add/role/:role", async (req, res) => {
             let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
             let limiter = await collection.find({}).toArray()
             let location;
-            geoCoder.geocode(req.body.Address)
+            await geoCoder.geocode(`${req.body.Address}`)
             .then((res)=> {
             location = res
             })
             .catch((err)=> {
             console.log(err);
             }); 
-            
+            // console.log(location,req.body.Address)
             if(obj.length == 0 && limiter.length < 20){
             //Encrypt user password
                 let {Password} = req.body
@@ -513,11 +515,16 @@ app.listen(port,()=>{
     // insertHospitals()
     // getData("users")
     // getData("doctors")
-
-    // getDataFromCollection('users',{})
-    // getDataFromCollection('consultations',{})
     // getCollectionsList("root-db").then((res)=>{
     //     console.log(res)
     // })
-    
+
+    // const result = excelToJson({
+    //     source: fs.readFileSync("GP's list.xlsx"), // fs.readFileSync return a Buffer
+    //     header:{
+    //         // Is the number of rows that will be skipped and will not be present at our result object. Counting from top to bottom
+    //         rows: 1 // 2, 3, 4, etc.
+    //     }
+    // });
+    // console.log(result)
 })
