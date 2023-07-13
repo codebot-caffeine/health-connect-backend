@@ -1,18 +1,63 @@
 var {getCollection} = require('./editCollections')
+const excelToJson = require('convert-excel-to-json');
+const fs = require('fs');
+let nodeGeocoder = require('node-geocoder');
+//geo coder testing
+let options = {
+    provider: 'openstreetmap'
+};
+   
+let geoCoder = nodeGeocoder(options);
+
+// const Geocodio = require('geocodio-library-node');
+// const geocoder = new Geocodio('d4e40b0a006abd0500dd50654406a6b64d56fd0');
+
+function generatePassword() {
+    var length = 12,
+        charset = 
+       "0123456789",
+        password = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+        password += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return password;
+}
+
+async function returnLocation(address){
+    let location;
+    let obtained = [];
+    await geoCoder.geocode(address).then((res)=>{
+       obtained.push(res)
+    })
+    // console.log(location)
+}
 
 async function insertHospitals(){
     let collection = await getCollection("hospitals")
-    await collection.insertMany([{
-        HospitalName:"Apollo",
-        HospitalId:1,
-        Address: "Hyderabad",
-        Mobile: 9990000000
-    },{
-        HospitalName:"Gandhi",
-        HospitalId:2,
-        Address: "Hyderabad",
-        Mobile: 9990000000
-    }]).then((res)=>{
+    let result = excelToJson({
+        source: fs.readFileSync("gpslistnew.xlsx"), // fs.readFileSync return a Buffer
+        header:{
+            // Is the number of rows that will be skipped and will not be present at our result object. Counting from top to bottom
+            rows: 1 // 2, 3, 4, etc.
+        }
+    });
+    result = result['gps-list-new']
+    result = result.map( (each)=>{    
+        let obj = {}
+        obj.HospitalName =  each.A,
+        obj.HospitalId  =  parseInt(generatePassword())
+        obj.Address =  each.B
+        obj.Mobile = each.D ? parseInt(String(each.D).split(' ').join().replaceAll(',','')) : -1
+        obj.Website  = each.E ? each.E : ''
+        obj.Doctors = []
+        obj.Location = {latitude: each.F,longitude:each.G}
+        // obj._id = parseInt(generatePassword())
+        return obj
+    })
+    // console.log(result)
+    // console.log(resultSheet.GPslist_geocodio_4f29734cc22d75)
+    // console.log([...result])
+    await collection.insertMany(result).then((res)=>{
         console.log(res)
     })
 }

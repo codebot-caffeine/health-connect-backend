@@ -64,7 +64,13 @@ async function modifyCollection(collectionName,fields){//collection creation wit
                 bsonType : ["object","array"],
                 description: "Optional"
             }
-        }else if( e == "Slots"){
+        }else if( e == "Drugs"){
+            obj[e] = {
+                bsonType : ["array"],
+                description: "Optional"
+            }
+        }
+        else if( e == "Slots"){
             obj[e] = {
                 bsonType : "array",
                 items: {

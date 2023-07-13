@@ -320,20 +320,20 @@ app.post("/book/consultation",verifyToken,async (req,res)=>{
 app.post("/add/prescription",verifyToken,async(req,res)=>{
     // let {body} = req
     let prescCollection = await getCollection('prescriptions')
-    let obj = prescCollection.find({
+    let obj = await prescCollection.find({
         'ConsultationId' : req.body.ConsultationId
     }).toArray()
     if(obj.length == 0){
         prescCollection.insertOne({
             ...req.body
         }).then(async (response)=>{
-            const filter = {'_id' : new ObjectId(req.body.ConsultationId)};
-            const updateDoc = {
-                $set: {
-                  Prescription:  response.insertedId
-                },
-            };
-            await getCollection('consultations').updateOne(filter,updateDoc)
+            // const filter = {'_id' : new ObjectId(req.body.ConsultationId)};
+            // const updateDoc = {
+            //     $set: {
+            //       Prescription:  response.insertedId
+            //     },
+            // };
+            // await getCollection('consultations').updateOne(filter,updateDoc)
             res.status(201).send({status:true,response:{...response}});
         }).catch((err)=>{    
             res.status(400).send ({status:false,errorMessage :'Failed to insert prescription'})
@@ -362,9 +362,9 @@ app.get("/get/consultations/:role",verifyToken,async(req,res)=>{
 
 app.get("/get/prescriptions/:consultationId",verifyToken,async(req,res)=>{
     let {consultationId} = req.params
+    let coll = await getCollection('prescriptions')
 
-    let data = await getCollection('prescriptions').findOne({"ConsultationId" : consultationId}).toArray()
-
+    let data =await coll.find({"ConsultationId" : consultationId}).toArray()
     if(data){
        res.status(201).send({
         status:true,
@@ -499,6 +499,14 @@ app.post("/signin",async(req,res)=>{
     }
 })
 
+async function createCollectionHospitals(){
+    var connection = await client.connect()
+    let db0 = await connection.db("root-db")
+    db0.createCollection('hospitals').then((res)=>{
+        console.log(res)
+    })
+}
+
 
 app.listen(port,()=>{
     // getDatabasesAndCollections().then((res)=>{
@@ -506,8 +514,8 @@ app.listen(port,()=>{
     // })
     console.log(`server started on ${port}`)
     //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
-    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Address","Location","Experience","Specalization","HospitalId"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
-    // modifyCollection("doctors",fields)
+    let fields = ["Drugs","ConsultationId"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
+    // modifyCollection("prescriptions",fields)
     // geoCode(' rk beach Visakhapatnam')
     // dropCollection("root-db","users-auth")
     // getData("users")
@@ -518,6 +526,7 @@ app.listen(port,()=>{
     // getCollectionsList("root-db").then((res)=>{
     //     console.log(res)
     // })
+    // createCollectionHospitals()
 
     // const result = excelToJson({
     //     source: fs.readFileSync("GP's list.xlsx"), // fs.readFileSync return a Buffer
