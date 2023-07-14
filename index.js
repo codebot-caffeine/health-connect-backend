@@ -368,12 +368,19 @@ app.get("/get/prescriptions/:consultationId",async(req,res)=>{
     let data =await coll.find({"ConsultationId" : consultationId}).toArray()
     let data2 = await coll2.find({"_id" : new ObjectId(consultationId)}).toArray()
     if(data && data2){
-       res.status(201).send({
-        status:true,
-        response:{
-            prescriptions : {...data},consultations:{...data2}
+        if(data.length == 0 && data2.length == 0){
+            res.status(200).send({
+                status:false,
+                errorMessage:'No data found.'
+            })
+            return  
         }
-       })
+        res.status(201).send({
+            status:true,
+            response:{
+                prescriptions : {...data},consultations:{...data2}
+            }
+        })
     }else{
         res.status(200).send({
             status:false,
