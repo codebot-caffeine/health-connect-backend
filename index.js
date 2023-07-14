@@ -360,13 +360,13 @@ app.get("/get/consultations/:role",verifyToken,async(req,res)=>{
     }
 })
 
-app.get("/get/prescriptions/:consultationId",verifyToken,async(req,res)=>{
+app.get("/get/prescriptions/:consultationId",async(req,res)=>{
     let {consultationId} = req.params
     let coll = await getCollection('prescriptions')
     let coll2 = await getCollection('consultations')
 
     let data =await coll.find({"ConsultationId" : consultationId}).toArray()
-    let data2 = await coll2.find({"_id" : new Object(consultationId)}).toArray()
+    let data2 = await coll2.find({"_id" : new ObjectId(consultationId)}).toArray()
     if(data && data2){
        res.status(201).send({
         status:true,
@@ -516,8 +516,8 @@ app.listen(port,()=>{
     // })
     console.log(`server started on ${port}`)
     //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
-    let fields = ["Drugs","ConsultationId"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
-    // modifyCollection("prescriptions",fields)
+    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId","Address"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
+    // modifyCollection("doctors",fields)
     // geoCode(' rk beach Visakhapatnam')
     // dropCollection("root-db","users-auth")
     // getData("users")

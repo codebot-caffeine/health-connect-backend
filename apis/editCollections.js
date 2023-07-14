@@ -55,7 +55,7 @@ async function modifyCollection(collectionName,fields){//collection creation wit
         }
         else if(e == "Password" || e == "Email" || e =="HospitalName" || e=="HospitalId" || e == "ConsultationId"){
             obj[e] = {
-                bsonType: ["string","int"],
+                bsonType: ["string","int","double"],
                 description: "Required."
             }
         }
