@@ -371,7 +371,7 @@ app.get("/get/prescriptions/:consultationId",async(req,res)=>{
        res.status(201).send({
         status:true,
         response:{
-            ...data,...data2
+            prescriptions : {...data},consultations:{...data2}
         }
        })
     }else{
