@@ -46,15 +46,15 @@ async function insertHospitals(){
         let obj = {}
         obj.HospitalName =  each.A,
         obj.HospitalId  =  parseInt(generatePassword())
-        obj.Address =  each.B
+        obj.Address =  each.G
         obj.Mobile = each.D ? parseInt(String(each.D).split(' ').join().replaceAll(',','')) : -1
         obj.Website  = each.E ? each.E : ''
         obj.Doctors = []
-        obj.Location = {latitude: each.F,longitude:each.G}
+        obj.Location = {latitude: each.K,longitude:each.L}
         // obj._id = parseInt(generatePassword())
         return obj
     })
-    // console.log(result)
+    console.log(result)
     // console.log(resultSheet.GPslist_geocodio_4f29734cc22d75)
     // console.log([...result])
     await collection.insertMany(result).then((res)=>{

@@ -363,13 +363,15 @@ app.get("/get/consultations/:role",verifyToken,async(req,res)=>{
 app.get("/get/prescriptions/:consultationId",verifyToken,async(req,res)=>{
     let {consultationId} = req.params
     let coll = await getCollection('prescriptions')
+    let coll2 = await getCollection('consultations')
 
     let data =await coll.find({"ConsultationId" : consultationId}).toArray()
-    if(data){
+    let data2 = await coll2.find({"_id" : new Object(consultationId)}).toArray()
+    if(data && data2){
        res.status(201).send({
         status:true,
         response:{
-            ...data
+            ...data,...data2
         }
        })
     }else{
