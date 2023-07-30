@@ -7,7 +7,7 @@ let nodeGeocoder = require('node-geocoder');
 const excelToJson = require('convert-excel-to-json');
 const fs = require('fs');
 
-var port = process.env.PORT || 3000
+const port = process.env.PORT || 3000
 
 //imports from made moduels
 var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollection, createDb} = require("./apis/editCollections")
@@ -59,9 +59,6 @@ app.use(bodyParser.json());
 // const server = http.createServer(app);
 // const { Server } = require("socket.io");
 // const io = new Server(server);
-
-var server = app.listen(port)
-const io = require('socket.io')(server)
 
 async function getCollection(collectionName){
     let result = await client.connect();
@@ -413,79 +410,16 @@ app.get("/get/prescriptions/:consultationId",async(req,res)=>{
 })
 
 
-// MongoClient.connect(url, async (err, Database) => {
-//     if(err) {
-//         console.log(err);
-//         return false;
-//     }
-//     console.log("Connected to MongoDB");
-//     // const db = Database.db("Chat_App"); 
-//     users = await getCollection('users'); // getting the users collection
-//     chatRooms =  await getCollection("chatRooms"); /* getting the chatRooms collection. 
-//                                                 This collection would store chats in that room*/
-    
-//     // starting the server on the port number 3000 and storing the returned server variable 
-//     const server = app.listen(port, () => {
-//         console.log("Server started on port " + port + "...");
-//     });
-//     const io = socket.listen(server);
 
-//     /* 'connection' is a socket.io event that is triggered when a new connection is 
-//        made. Once a connection is made, callback is called. */
-//     io.sockets.on('connection', (socket) => { /* socket object allows us to join specific clients 
-//                                                 to chat rooms and also to catch
-//                                                 and emit the events.*/
-//         // 'join event'
-//         socket.on('join', (data) => {          
-//             socket.join(data._id);
-//             chatRooms.find({}).toArray((err, rooms) => {
-//                 if(err){
-//                     console.log(err);
-//                     return false;
-//                 }
-//                 count = 0;
-//                 rooms.forEach((room) => {
-//                     if(room._id == data._id){
-//                         count++;
-//                     }
-//                 });
-//                 // Create the chatRoom if not already created
-//                 if(count == 0) {
-//                     chatRooms.insert({ _id: data._id, messages: [] }); 
-//                 }
-//             });
-//         });
-//         // catching the message event
-//         socket.on('message', (data) => {
-//             // emitting the 'new message' event to the clients in that room
-//             io.in(data._id).emit('new message', {user: data.user, message: data.message});
-//             // save the message in the 'messages' array of that chat-room
-//             chatRooms.update({_id: data._id}, { $push: { messages: { user: data.user, message: data.message } } }, (err, res) => {
-//                 if(err) {
-//                     console.log(err);
-//                     return false;
-//                 }
-//             });
-//         });
-//         // Event when a client is typing
-//         socket.on('typing', (data) => {
-//             // Broadcasting to all the users except the one typing 
-//             socket.broadcast.in(data._id).emit('typing', {data: data, isTyping: true});
-//         });
-//     });
-
-// }); 
-
-
-// function geoCode(address){
-//     geoCoder.geocode(address)
-//     .then((res)=> {
-//       console.log(res);
-//     })
-//     .catch((err)=> {
-//       console.log(err);
-//     }); 
-// }
+function geoCode(address){
+    geoCoder.geocode(address)
+    .then((res)=> {
+      console.log(res);
+    })
+    .catch((err)=> {
+      console.log(err);
+    }); 
+}
 
 //with auth code signup and signin
 app.post("/add/role/:role", async (req, res) => {
@@ -602,171 +536,32 @@ async function createCollectionHospitals(){
     })
 }
 
-function runSocket(){
-    client.connect(url 
-    ).then(async (response)=>{
-        // (err, Database) => {
-           
-            // const db = Database.db("Chat_App"); 
-            // const db = Database.db("root-db");
-            users = await getCollection("users");
-            chatRooms = await getCollection("chatRooms");
-            
-            // starting the server on the port number 3000 and storing the returned server variable 
-            // console.log(chatRooms)
-            // console.log(socket)
-            // const servers = app.listen(5000, () => {
-            //     console.log("Server started on port " + port + "...");
-            // });
-            // const io = new socket(5000);
-        
-            /* 'connection' is a socket.io event that is triggered when a new connection is 
-               made. Once a connection is made, callback is called. */
-            //    console.log(chatRooms)
-            io.sockets.on('connection', (socket) => { /* socket object allows us to join specific clients 
-                                                        to chat rooms and also to catch
-                                                        and emit the events.*/
-                                                        console.log('socket running')
-                // 'join event'
-                socket.on('join', (data) => {          
-                    socket.join(data._id);
-                    chatRooms.find({}).toArray((err, rooms) => {
-                        if(err){
-                            console.log(err);
-                            return false;
-                        }
-                        count = 0;
-                        rooms.forEach((room) => {
-                            if(room._id == data._id){
-                                count++;
-                            }
-                        });
-                        // Create the chatRoom if not already created
-                        if(count == 0) {
-                            chatRooms.insert({ _id: data._id, messages: [] }); 
-                        }
-                    });
-                });
-                // catching the message event
-                socket.on('message', (data) => {
-                    // emitting the 'new message' event to the clients in that room
-                    io.in(data._id).emit('new message', {user: data.user, message: data.message});
-                    // save the message in the 'messages' array of that chat-room
-                    chatRooms.update({_id: data._id}, { $push: { messages: { user: data.user, message: data.message } } }, (err, res) => {
-                        if(err) {
-                            console.log(err);
-                            return false;
-                        }
-                    });
-                });
-                // Event when a client is typing
-                socket.on('typing', (data) => {
-                    // Broadcasting to all the users except the one typing 
-                    socket.broadcast.in(data._id).emit('typing', {data: data, isTyping: true});
-                });
-            });
-        
-        }
-    ).catch((error)=>{
-        console.log(error)
-    })
-}
-// app.listen(port,()=>{
-//     // getDatabasesAndCollections().then((res)=>{
-//     //     console.log(res)
-//     // })
-//     console.log(`server started on ${port}`)
-//     //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
-//     let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId","Address"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
-//     // modifyCollection("doctors",fields)
-//     // geoCode(' rk beach Visakhapatnam')
-//     // dropCollection("root-db","users-auth")
-//     // getData("users")
-//     // insertHospitals()
-//     // getData("users")
-//     // getData("doctors")
-//     // getCollectionsList("root-db").then((res)=>{
-//     //     console.log(res)
-//     // })
-//     // createCollectionHospitals()
+app.listen(port,()=>{
+    // getDatabasesAndCollections().then((res)=>{
+    //     console.log(res)
+    // })
+    console.log(`server started on ${port}`)
+    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
+    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId","Address"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
+    // modifyCollection("doctors",fields)
+    // geoCode(' rk beach Visakhapatnam')
+    // dropCollection("root-db","users-auth")
+    // getData("users")
+    // insertHospitals()
+    // getData("users")
+    // getData("doctors")
+    // getCollectionsList("root-db").then((res)=>{
+    //     console.log(res)
+    // })
+    // createCollectionHospitals()
 
-//     // const result = excelToJson({
-//     //     source: fs.readFileSync("GP's list.xlsx"), // fs.readFileSync return a Buffer
-//     //     header:{
-//     //         // Is the number of rows that will be skipped and will not be present at our result object. Counting from top to bottom
-//     //         rows: 1 // 2, 3, 4, etc.
-//     //     }
-//     // });
-//     // console.log(result)
+    // const result = excelToJson({
+    //     source: fs.readFileSync("GP's list.xlsx"), // fs.readFileSync return a Buffer
+    //     header:{
+    //         // Is the number of rows that will be skipped and will not be present at our result object. Counting from top to bottom
+    //         rows: 1 // 2, 3, 4, etc.
+    //     }
+    // });
+    // console.log(result)
    
-// })
-
-runSocket()
-// io.on('connection', (socket) => {
-//     console.log('a user connected');
-// });
-
-// MongoClient.connect(url, 
-//     async (err, Database) => {
-//     if(err) {
-//         console.log(err);
-//         return false;
-//     }
-//     console.log("Connected to MongoDB");
-//     // const db = Database.db("Chat_App"); 
-//     users = await getCollection('users'); // getting the users collection
-//     chatRooms =  await getCollection("chatRooms"); /* getting the chatRooms collection. 
-//                                                 This collection would store chats in that room*/
-    
-//     // starting the server on the port number 3000 and storing the returned server variable 
-//     console.log(chatRooms)
-//     const server = app.listen(port, () => {
-//         console.log("Server started on port " + port + "...");
-//     });
-//     const io = socket.listen(server);
-
-//     /* 'connection' is a socket.io event that is triggered when a new connection is 
-//        made. Once a connection is made, callback is called. */
-//     io.sockets.on('connection', (socket) => { /* socket object allows us to join specific clients 
-//                                                 to chat rooms and also to catch
-//                                                 and emit the events.*/
-//         // 'join event'
-//         socket.on('join', (data) => {          
-//             socket.join(data._id);
-//             chatRooms.find({}).toArray((err, rooms) => {
-//                 if(err){
-//                     console.log(err);
-//                     return false;
-//                 }
-//                 count = 0;
-//                 rooms.forEach((room) => {
-//                     if(room._id == data._id){
-//                         count++;
-//                     }
-//                 });
-//                 // Create the chatRoom if not already created
-//                 if(count == 0) {
-//                     chatRooms.insert({ _id: data._id, messages: [] }); 
-//                 }
-//             });
-//         });
-//         // catching the message event
-//         socket.on('message', (data) => {
-//             // emitting the 'new message' event to the clients in that room
-//             io.in(data._id).emit('new message', {user: data.user, message: data.message});
-//             // save the message in the 'messages' array of that chat-room
-//             chatRooms.update({_id: data._id}, { $push: { messages: { user: data.user, message: data.message } } }, (err, res) => {
-//                 if(err) {
-//                     console.log(err);
-//                     return false;
-//                 }
-//             });
-//         });
-//         // Event when a client is typing
-//         socket.on('typing', (data) => {
-//             // Broadcasting to all the users except the one typing 
-//             socket.broadcast.in(data._id).emit('typing', {data: data, isTyping: true});
-//         });
-//     });
-
-// }); 
+})
