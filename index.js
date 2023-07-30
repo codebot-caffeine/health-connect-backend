@@ -7,6 +7,8 @@ let nodeGeocoder = require('node-geocoder');
 const excelToJson = require('convert-excel-to-json');
 const fs = require('fs');
 
+var port = process.env.PORT || 3000
+
 //imports from made moduels
 var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollection, createDb} = require("./apis/editCollections")
 var {insertHospitals} = require('./apis/supportApis')
@@ -16,7 +18,8 @@ const { ObjectId } = require("mongodb")
 
 
 const bodyParser = require('body-parser');
-const socket = require('socket.io');
+const io = require('socket.io')(5000)
+
 let users;
 let count;
 let chatRooms;
@@ -50,7 +53,13 @@ app.use(exp.json())
 // body-parser middleware
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 3000
+
+
+
+// const http = require('http');
+// const server = http.createServer(app);
+// const { Server } = require("socket.io");
+// const io = new Server(server);
 
 async function getCollection(collectionName){
     let result = await client.connect();
@@ -591,42 +600,31 @@ async function createCollectionHospitals(){
     })
 }
 
-
-app.listen(port,()=>{
-    // getDatabasesAndCollections().then((res)=>{
-    //     console.log(res)
-    // })
-    console.log(`server started on ${port}`)
-    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
-    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId","Address"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
-    // modifyCollection("doctors",fields)
-    // geoCode(' rk beach Visakhapatnam')
-    // dropCollection("root-db","users-auth")
-    // getData("users")
-    client.connect(url,
-        (err, Database) => {
-            if(err) {
-                console.log(err);
-                return false;
-            }
-            console.log("Connected to MongoDB");
+function runSocket(){
+    client.connect(url 
+    ).then(async (response)=>{
+        // (err, Database) => {
+           
             // const db = Database.db("Chat_App"); 
-            const db = Database.db("root-db");
-            users = db.collection("users");
-            chatRooms = db.collection("chatRooms");
+            // const db = Database.db("root-db");
+            users = await getCollection("users");
+            chatRooms = await getCollection("chatRooms");
             
             // starting the server on the port number 3000 and storing the returned server variable 
-            console.log(chatRooms)
-            const server = app.listen(port, () => {
-                console.log("Server started on port " + port + "...");
-            });
-            const io = socket.listen(server);
+            // console.log(chatRooms)
+            // console.log(socket)
+            // const servers = app.listen(5000, () => {
+            //     console.log("Server started on port " + port + "...");
+            // });
+            // const io = new socket(5000);
         
             /* 'connection' is a socket.io event that is triggered when a new connection is 
                made. Once a connection is made, callback is called. */
+            //    console.log(chatRooms)
             io.sockets.on('connection', (socket) => { /* socket object allows us to join specific clients 
                                                         to chat rooms and also to catch
                                                         and emit the events.*/
+                                                        console.log('socket running')
                 // 'join event'
                 socket.on('join', (data) => {          
                     socket.join(data._id);
@@ -667,7 +665,21 @@ app.listen(port,()=>{
             });
         
         }
-    )
+    ).catch((error)=>{
+        console.log(error)
+    })
+}
+app.listen(port,()=>{
+    // getDatabasesAndCollections().then((res)=>{
+    //     console.log(res)
+    // })
+    console.log(`server started on ${port}`)
+    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
+    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId","Address"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
+    // modifyCollection("doctors",fields)
+    // geoCode(' rk beach Visakhapatnam')
+    // dropCollection("root-db","users-auth")
+    // getData("users")
     // insertHospitals()
     // getData("users")
     // getData("doctors")
@@ -686,6 +698,11 @@ app.listen(port,()=>{
     // console.log(result)
    
 })
+
+runSocket()
+// io.on('connection', (socket) => {
+//     console.log('a user connected');
+// });
 
 // MongoClient.connect(url, 
 //     async (err, Database) => {
