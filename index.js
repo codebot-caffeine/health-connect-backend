@@ -14,6 +14,15 @@ var{TOKEN_KEY} = require("./key")
 var{verifyToken} = require('./middleware/auth')
 const { ObjectId } = require("mongodb")
 
+
+const bodyParser = require('body-parser');
+const socket = require('socket.io');
+let users;
+let count;
+let chatRooms;
+let messagesArray = [];
+
+
 //geo coder testing
 let options = {
     provider: 'openstreetmap'
@@ -37,6 +46,9 @@ app.use(function(req, res, next) {
     next();
 })
 app.use(exp.json())
+
+// body-parser middleware
+app.use(bodyParser.json());
 
 var port = process.env.PORT || 3000
 
@@ -73,9 +85,9 @@ async function getDataFromCollection(cName,filter){
     return {response:v,total:total}
 }
 
-app.get("/",(req,res)=>{
-    res.send('running in 3000')
-})
+// app.get("/",(req,res)=>{
+//     res.send('running in 3000')
+// })
 
 app.get(`/list/hospitals`,(req,response)=>{
     let page  = parseInt(req.query.page ? req.query.page : -1)
@@ -389,6 +401,69 @@ app.get("/get/prescriptions/:consultationId",async(req,res)=>{
     }
 })
 
+
+MongoClient.connect(url, async (err, Database) => {
+    if(err) {
+        console.log(err);
+        return false;
+    }
+    console.log("Connected to MongoDB");
+    // const db = Database.db("Chat_App"); 
+    users = await getCollection('users'); // getting the users collection
+    chatRooms =  await getCollection("chatRooms"); /* getting the chatRooms collection. 
+                                                This collection would store chats in that room*/
+    
+    // starting the server on the port number 3000 and storing the returned server variable 
+    const server = app.listen(port, () => {
+        console.log("Server started on port " + port + "...");
+    });
+    const io = socket.listen(server);
+
+    /* 'connection' is a socket.io event that is triggered when a new connection is 
+       made. Once a connection is made, callback is called. */
+    io.sockets.on('connection', (socket) => { /* socket object allows us to join specific clients 
+                                                to chat rooms and also to catch
+                                                and emit the events.*/
+        // 'join event'
+        socket.on('join', (data) => {          
+            socket.join(data.room);
+            chatRooms.find({}).toArray((err, rooms) => {
+                if(err){
+                    console.log(err);
+                    return false;
+                }
+                count = 0;
+                rooms.forEach((room) => {
+                    if(room._id == data._id){
+                        count++;
+                    }
+                });
+                // Create the chatRoom if not already created
+                if(count == 0) {
+                    chatRooms.insert({ _id: data._id, messages: [] }); 
+                }
+            });
+        });
+        // catching the message event
+        socket.on('message', (data) => {
+            // emitting the 'new message' event to the clients in that room
+            io.in(data._id).emit('new message', {user: data.user, message: data.message});
+            // save the message in the 'messages' array of that chat-room
+            chatRooms.update({_id: data._id}, { $push: { messages: { user: data.user, message: data.message } } }, (err, res) => {
+                if(err) {
+                    console.log(err);
+                    return false;
+                }
+            });
+        });
+        // Event when a client is typing
+        socket.on('typing', (data) => {
+            // Broadcasting to all the users except the one typing 
+            socket.broadcast.in(data._id).emit('typing', {data: data, isTyping: true});
+        });
+    });
+
+}); 
 
 
 // function geoCode(address){
