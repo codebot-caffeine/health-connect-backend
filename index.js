@@ -426,7 +426,7 @@ MongoClient.connect(url, async (err, Database) => {
                                                 and emit the events.*/
         // 'join event'
         socket.on('join', (data) => {          
-            socket.join(data.room);
+            socket.join(data._id);
             chatRooms.find({}).toArray((err, rooms) => {
                 if(err){
                     console.log(err);
