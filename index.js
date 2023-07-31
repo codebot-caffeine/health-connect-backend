@@ -40,8 +40,10 @@ var MongoClient = require("mongodb").MongoClient
 let url = "mongodb+srv://Eshh:health-connect@health-connect.ziqzbp9.mongodb.net/?retryWrites=true&w=majority"
 
 var client  = new MongoClient(url)
-
+//express imports
 var app = exp()
+
+var serverHttp = require('http').createServer(app)
 app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -55,12 +57,9 @@ app.use(exp.json())
 app.use(bodyParser.json());
 
 
-
-
-// const http = require('http');
-// const server = http.createServer(app);
-// const { Server } = require("socket.io");
-// const io = new Server(server);
+// socket io imoprts
+var socketIO = require('socket.io');
+var io = socketIO(serverHttp);
 
 async function getCollection(collectionName){
     let result = await client.connect();
@@ -538,35 +537,48 @@ async function createCollectionHospitals(){
     })
 }
 
-app.listen(port,()=>{
-    // getDatabasesAndCollections().then((res)=>{
-    //     console.log(res)
-    // })
-    console.log(`server started on ${port}`)
-    //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
-    let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId","Address"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
-    // modifyCollection("doctors",fields)
-    // geoCode(' rk beach Visakhapatnam')
-    // dropCollection("root-db","users-auth")
-    // getData("users")
-    // insertHospitals()
-    // getData("users")
-    // getData("doctors")
-    // getCollectionsList("root-db").then((res)=>{
-    //     console.log(res)
-    // })
-    // createCollectionHospitals()
 
-    // const result = excelToJson({
-    //     source: fs.readFileSync("GP's list.xlsx"), // fs.readFileSync return a Buffer
-    //     header:{
-    //         // Is the number of rows that will be skipped and will not be present at our result object. Counting from top to bottom
-    //         rows: 1 // 2, 3, 4, etc.
-    //     }
-    // });
-    // console.log(result)
-   
-})
+// Starting Express server
+serverHttp.listen(port, function() {
+    console.log('Server is running on ' + port + '...');
+});
 
-
-chatApp()
+MongoClient.connect(url).then((Database)=>{
+    console.log("Connected to database");
+    let db = Database.db('root-db')
+    users = db.collection("users");
+    chatRooms = db.collection("chatRooms");
+    io.sockets.on('connection', (socket) => {
+        socket.on('join', (data) => {
+            socket.join(data._id);
+            chatRooms.find({}).toArray((err, rooms) => {
+                if(err){
+                    console.log(err);
+                    return false;
+                }
+                count = 0;
+                rooms.forEach((room) => {
+                    if(room._id == data._id){
+                        count++;
+                    }
+                });
+                if(count == 0) {
+                    chatRooms.insert({ _id: data._id, messages: [] }); 
+                }
+            });
+        });
+        socket.on('message', (data) => {
+            io.in(data._id).emit('new message', {user: data.user, message: data.message});
+            chatRooms.update({_id: data._id}, { $push: { messages: { user: data.user, message: data.message } } }, (err, res) => {
+                if(err) {
+                    console.log(err);
+                    return false;
+                }
+                console.log("Document updated");
+            });
+        });
+        socket.on('typing', (data) => {
+            socket.broadcast.in(data._id).emit('typing', {data: data, isTyping: true});
+        });
+    });
+});

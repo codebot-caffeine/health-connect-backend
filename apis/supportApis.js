@@ -211,6 +211,35 @@ async function insertHospitals(){
 //     }
 // })
 
+// serverHttp.listen(port,()=>{
+//     // getDatabasesAndCollections().then((res)=>{
+//     //     console.log(res)
+//     // })
+//     console.log(`server started on ${port}`)
+//     //"Name","Gender","DOB","Postcode","Email","Mobile","Age","Password","Role","Experience","Specalization","HospitalName","HospitalId","Address","Doctors","Mobile","Website","User","Doctor","BookedSlot","Hospital","Prescription"
+//     let fields = ["Name","Gender","DOB","Postcode","Email","Mobile","Password","Role","Experience","Specalization","HospitalId","Address"]//["DrugName","Dosage","Days","ConsultationId","Comments"]
+//     // modifyCollection("doctors",fields)
+//     // geoCode(' rk beach Visakhapatnam')
+//     // dropCollection("root-db","users-auth")
+//     // getData("users")
+//     // insertHospitals()
+//     // getData("users")
+//     // getData("doctors")
+//     // getCollectionsList("root-db").then((res)=>{
+//     //     console.log(res)
+//     // })
+//     // createCollectionHospitals()
+
+//     // const result = excelToJson({
+//     //     source: fs.readFileSync("GP's list.xlsx"), // fs.readFileSync return a Buffer
+//     //     header:{
+//     //         // Is the number of rows that will be skipped and will not be present at our result object. Counting from top to bottom
+//     //         rows: 1 // 2, 3, 4, etc.
+//     //     }
+//     // });
+//     // console.log(result)
+//     // chatApp(port)
+// })
 
 
 module.exports = {insertHospitals}
