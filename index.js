@@ -14,6 +14,8 @@ var {getDatabasesAndCollections,getCollectionsList,dropCollection, modifyCollect
 var {insertHospitals} = require('./apis/supportApis')
 var{TOKEN_KEY} = require("./key")
 var{verifyToken} = require('./middleware/auth')
+var {chatApp} = require('./chat')
+
 const { ObjectId } = require("mongodb")
 
 
@@ -565,3 +567,6 @@ app.listen(port,()=>{
     // console.log(result)
    
 })
+
+
+chatApp()
