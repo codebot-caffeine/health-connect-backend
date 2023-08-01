@@ -538,7 +538,7 @@ app.post("/signin",async(req,res)=>{
 app.get('/chatroom/:id', async (req, res, next) => {
     let room = req.params.id;
     let chatRooms = await getCollection('chatRooms')
-    chatRooms.find({_id: room}).toArray((err, chatroom) => {
+    chatRooms.find({"_id": room}).toArray((err, chatroom) => {
         if(err) {
             console.log(err);
             res.status(404).send({status:false,errorMessage:'Unable to find previous messages.'})
