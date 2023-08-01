@@ -538,15 +538,19 @@ app.post("/signin",async(req,res)=>{
 app.get('/chatroom/:id', async (req, res, next) => {
     let room = req.params.id;
     let chatRooms = await getCollection('chatRooms')
-    let foundObject = await chatRooms.find({"_id": room}).toArray()
-    // chatRooms.find({"_id": room}).toArray((err, chatroom) => {
-        if(!foundObject) {
-            console.log(err);
-            res.status(404).send({status:false,errorMessage:'Unable to find previous messages.'})
-            return false;
-        }else{
-            res.status(201).json({status:true,messages:foundObject[0].messages});
-        }
+    try{
+        let foundObject = await chatRooms.find({"_id": room}).toArray()
+        // chatRooms.find({"_id": room}).toArray((err, chatroom) => {
+            if(!foundObject) {
+                console.log(err);
+                res.status(404).send({status:false,errorMessage:'Unable to find previous messages.'})
+                return false;
+            }else{
+                res.status(201).json({status:true,messages:foundObject[0].messages});
+            }
+    }catch(err){
+        res.status(404).send({status:false,errorMessage:err})
+    }
     // });
 });
 
