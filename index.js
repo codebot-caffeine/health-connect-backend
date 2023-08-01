@@ -587,8 +587,8 @@ MongoClient.connect(url).then((Database)=>{
             });
         });
         socket.on('message', (data) => {
-            io.in(data._id).emit('new message', {user: data.user, message: data.message});
-            chatRooms.findOneAndUpdate({_id: data._id}, { $push: { messages: { user: data.user, message: data.message } } }, (err, res) => {
+            io.in(data._id).emit('new message', {user: data.info.user, message: data.message,time:data.info.time});
+            chatRooms.findOneAndUpdate({"_id": data._id}, { $push: { messages: { user: data.info.user, message: data.message,time: data.info.time} } },{upsert:true}, (err, res) => {
                 if(err) {
                     console.log(err);
                     return false;
