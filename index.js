@@ -534,6 +534,20 @@ app.post("/signin",async(req,res)=>{
     }
 })
 
+//get chats based on id
+app.get('/chatroom/:id', async (req, res, next) => {
+    let room = req.params.id;
+    let chatRooms = await getCollection('chatRooms')
+    chatRooms.find({_id: room}).toArray((err, chatroom) => {
+        if(err) {
+            console.log(err);
+            res.status(404).send({status:false,errorMessage:'Unable to find previous messages.'})
+            return false;
+        }
+        res.status(201).json({status:true,messages:chatroom[0].messages});
+    });
+});
+
 async function createCollectionHospitals(){
     var connection = await client.connect()
     let db0 = await connection.db("root-db")
