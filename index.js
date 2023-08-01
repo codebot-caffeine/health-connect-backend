@@ -59,7 +59,12 @@ app.use(bodyParser.json());
 
 // socket io imoprts
 var socketIO = require('socket.io');
-var io = socketIO(serverHttp);
+var io = socketIO(serverHttp,{
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+});
 
 async function getCollection(collectionName){
     let result = await client.connect();
@@ -569,7 +574,7 @@ MongoClient.connect(url).then((Database)=>{
         });
         socket.on('message', (data) => {
             io.in(data._id).emit('new message', {user: data.user, message: data.message});
-            chatRooms.update({_id: data._id}, { $push: { messages: { user: data.user, message: data.message } } }, (err, res) => {
+            chatRooms.findOneAndUpdate({_id: data._id}, { $push: { messages: { user: data.user, message: data.message } } }, (err, res) => {
                 if(err) {
                     console.log(err);
                     return false;
