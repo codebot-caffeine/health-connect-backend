@@ -436,6 +436,8 @@ app.post("/add/role/:role", async (req, res) => {
 
             let collection = await getCollection(collectionName)
             let obj = await collection.find({"Mobile": req.body.Mobile,"Email": req.body.Email}).toArray()
+            let phoneExists = await collection.find({"Mobile": req.body.Mobile}).toArray()
+            let emailExists = await collection.find({"Email": req.body.Email}).toArray()
             let limiter = await collection.find({}).toArray()
             let location;
             await geoCoder.geocode(`${req.body.Address}`)
@@ -446,7 +448,7 @@ app.post("/add/role/:role", async (req, res) => {
             console.log(err);
             }); 
             // console.log(location,req.body.Address)
-            if(obj.length == 0 && limiter.length < 20){
+            if(obj.length == 0 && limiter.length < 20 && phoneExists.length == 0 && emailExists.length == 0){
             //Encrypt user password
                 let {Password} = req.body
                 encryptedPassword = await bcrypt.hash(Password, 10);
@@ -478,7 +480,7 @@ app.post("/add/role/:role", async (req, res) => {
                         }
                 })
             }else{
-                res.status(200).send({status:false,errorMessage:"Email and Mobile are already used."})
+                res.status(200).send({status:false,errorMessage:"Email or Mobile is already used."})
             }
         }else{
             res.status(400).send({status:false,errorMessage:"role in path and body not matched"})
@@ -566,6 +568,7 @@ async function createCollectionHospitals(){
 // Starting Express server
 serverHttp.listen(port, function() {
     console.log('Server is running on ' + port + '...');
+    // insertHospitals()
 });
 
 MongoClient.connect(url).then((Database)=>{

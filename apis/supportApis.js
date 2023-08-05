@@ -35,26 +35,27 @@ async function returnLocation(address){
 async function insertHospitals(){
     let collection = await getCollection("hospitals")
     let result = excelToJson({
-        source: fs.readFileSync("gpslistnew.xlsx"), // fs.readFileSync return a Buffer
+        source: fs.readFileSync("gpslist.xlsx"), // fs.readFileSync return a Buffer
         header:{
             // Is the number of rows that will be skipped and will not be present at our result object. Counting from top to bottom
             rows: 1 // 2, 3, 4, etc.
         }
     });
-    result = result['gps-list-new']
+    // console.log(result)
+    result = result['Sheet1']
     result = result.map( (each)=>{    
         let obj = {}
         obj.HospitalName =  each.A,
         obj.HospitalId  =  parseInt(generatePassword())
-        obj.Address =  each.G
+        obj.Address =  each.B
         obj.Mobile = each.D ? parseInt(String(each.D).split(' ').join().replaceAll(',','')) : -1
         obj.Website  = each.E ? each.E : ''
         obj.Doctors = []
-        obj.Location = {latitude: each.K,longitude:each.L}
+        obj.Location = {latitude: each.F,longitude:each.G}
         // obj._id = parseInt(generatePassword())
         return obj
     })
-    console.log(result)
+    // console.log(result)
     // console.log(resultSheet.GPslist_geocodio_4f29734cc22d75)
     // console.log([...result])
     await collection.insertMany(result).then((res)=>{
